@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DELOS SYSTEM - FULL FACILITY MATRIX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --delos-cyan: #4df8ff;
+            --delos-cyan-dim: rgba(77, 248, 255, 0.15);
+            --delos-bg: #090e11;
+            --delos-grey: #6b8294;
+            --delos-alert: #ff3355;
+            --delos-offline: #a35c27;
+        }
+
+        body {
+            background-color: var(--delos-bg);
+            color: var(--delos-cyan);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 2vw;
+            display: flex;
+            flex-direction: column;
+            min-height: 90vh;
+            text-transform: uppercase;
+            background-image: 
+                linear-gradient(rgba(77, 248, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(77, 248, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--delos-cyan-dim);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .host-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .host-circle {
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--delos-cyan);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.5rem;
+            text-align: center;
+            box-shadow: 0 0 10px var(--delos-cyan-dim);
+            position: relative;
+        }
+        
+        .host-circle::before {
+            content: '';
+            position: absolute;
+            top: -4px; left: -4px; right: -4px; bottom: -4px;
+            border: 1px dashed var(--delos-grey);
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+        .system-info {
+            font-size: 0.6rem; 
+            color: var(--delos-grey);
+            font-family: 'Share Tech Mono', monospace;
+            line-height: 1.4;
+        }
+
+        .sync-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 40px;
+            padding: 5px 20px 5px 5px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .sync-container.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sync-circle {
+            position: relative;
+            width: 50px;
+            height: 50px;
+        }
+
+        .sync-circle svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .sync-bg { fill: none; stroke: #222; stroke-width: 4; }
+        .sync-progress {
+            fill: none; stroke: #fff; stroke-width: 4;
+            stroke-dasharray: 144; stroke-dashoffset: 144; stroke-linecap: round;
+        }
+
+        .sync-percent {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; font-family: 'Share Tech Mono', monospace; color: #fff;
+        }
+
+        .sync-text { display: flex; flex-direction: column; font-family: 'Share Tech Mono', monospace; line-height: 1.2; }
+        .sync-title { font-size: 0.9rem; color: #fff; letter-spacing: 1px; }
+        .sync-sub { font-size: 0.6rem; color: var(--delos-grey); }
+        .sync-path { font-size: 0.5rem; color: var(--delos-grey); opacity: 0.7; }
+
+        .matrix-title {
+            color: var(--delos-grey); font-size: 0.8rem; letter-spacing: 2px;
+            margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .matrix-title::before { content: '◆'; color: var(--delos-cyan); }
+
+        .facility-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; flex-grow: 1; }
+
+        .node-box {
+            background-color: rgba(0, 0, 0, 0.6); border: 1px solid var(--delos-cyan);
+            padding: 15px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            position: relative; transition: all 0.3s ease; display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .node-box.active { box-shadow: inset 0 0 10px var(--delos-cyan-dim); }
+        .node-box.alert {
+            border-color: var(--delos-alert); background-color: rgba(255, 51, 85, 0.05);
+            box-shadow: inset 0 0 15px rgba(255, 51, 85, 0.2);
+        }
+
+        .node-header { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--delos-grey); border-bottom: 1px solid #222; padding-bottom: 3px; }
+        .node-title { font-size: 1.4rem; font-weight: 700; letter-spacing: 1px; color: var(--delos-cyan); }
+        .node-box.alert .node-title { color: var(--delos-alert); }
+
+        .sensor-data { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; }
+        .data-item { background: rgba(77, 248, 255, 0.05); border-left: 2px solid var(--delos-cyan); padding: 6px 8px; display: flex; flex-direction: column; justify-content: center; }
+        .data-item.env-item { grid-column: span 2; }
+        .data-label { color: var(--delos-grey); font-size: 0.55rem; margin-bottom: 4px; }
+        .data-value { font-weight: bold; color: #fff; }
+
+        .env-meters { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+        .meter-group { display: flex; flex-direction: column; gap: 2px; }
+        .meter-text { display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--delos-cyan); }
+        .meter-bg { width: 100%; height: 4px; background-color: rgba(77, 248, 255, 0.1); border: 1px solid rgba(77, 248, 255, 0.2); }
+        .meter-fill { height: 100%; background-color: var(--delos-cyan); box-shadow: 0 0 5px var(--delos-cyan); transition: width 0.5s ease; }
+        
+        .meter-fill.warning { background-color: var(--delos-alert); box-shadow: 0 0 5px var(--delos-alert); }
+        .meter-text.warning-text { color: var(--delos-alert); }
+        
+        .val-alert { color: var(--delos-alert); animation: pulse 1.5s infinite; }
+        .val-offline { color: var(--delos-offline); }
+        .val-clear { color: var(--delos-cyan); }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .biometric-status {
+            margin-top: auto; padding: 8px; text-align: center; font-size: 0.9rem;
+            font-weight: 600; letter-spacing: 2px; background: var(--delos-cyan-dim);
+            border-top: 1px dashed var(--delos-cyan); transition: all 0.3s ease;
+        }
+
+        .node-box.alert .biometric-status {
+            background: rgba(255, 51, 85, 0.15); border-top: 1px dashed var(--delos-alert); color: var(--delos-alert);
+        }
+
+        .controls { margin-top: 20px; border-top: 1px solid var(--delos-cyan-dim); padding-top: 15px; display: flex; justify-content: flex-end; }
+        button {
+            background: transparent; color: var(--delos-cyan); border: 1px solid var(--delos-cyan);
+            padding: 8px 25px; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 1rem;
+            letter-spacing: 2px; cursor: pointer; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+            transition: all 0.2s;
+        }
+        button:hover:not(:disabled) { background: var(--delos-cyan); color: var(--delos-bg); }
+        button:disabled { color: var(--delos-grey); border-color: var(--delos-grey); cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="host-profile">
+            <div class="host-circle">
+                AUTH<br>USER
+            </div>
+            <div class="system-info">
+                FACILITY: YOKOHAMA RESIDENCE<br>
+                DATE: <span id="current-date">2026.08.12</span><br>
+                SYSTEM STATUS: <span style="color:var(--delos-cyan);">ONLINE</span><br>
+                UPLINK: SWITCHBOT API V1.1
+            </div>
+        </div>
+
+        <div class="sync-container" id="sync-ui">
+            <div class="sync-circle">
+                <svg viewBox="0 0 50 50">
+                    <circle class="sync-bg" cx="25" cy="25" r="23"></circle>
+                    <circle class="sync-progress" id="sync-ring" cx="25" cy="25" r="23"></circle>
+                </svg>
+                <div class="sync-percent" id="sync-percent">0%</div>
+            </div>
+            <div class="sync-text">
+                <div class="sync-title">FETCHING TELEMETRY...</div>
+                <div class="sync-sub">Sync in progress...</div>
+                <div class="sync-path">api.switch-bot.com/v1.1/devices ++Data+</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="matrix-title">FACILITY SENSOR MATRIX &lt; - - - &gt; DIAGNOSTICS</div>
+    
+    <div class="facility-grid">
+        
+        <!-- 書斎 (SECTOR 01) -->
+        <div class="node-box active" id="node-study">
+            <div class="node-header">▶ SECTOR 01</div>
+            <div class="node-title">STUDY</div>
+            <div class="sensor-data">
+                <div class="data-item env-item">
+                    <span class="data-label">ENVIRONMENT (TEMP / HUM)</span>
+                    <div class="env-meters">
+                        <div class="meter-group">
+                            <div class="meter-text" id="text-temp-study">TEMP <span class="data-value" id="val-temp-study">--°C</span></div>
+                            <div class="meter-bg"><div class="meter-fill" id="bar-temp-study" style="width: 0%;"></div></div>
+                        </div>
+                        <div class="meter-group">
+                            <div class="meter-text">HUM <span class="data-value" id="val-hum-study">--%</span></div>
+                            <div class="meter-bg"><div class="meter-fill" id="bar-hum-study" style="width: 0%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">ACCESS (WINDOW)</span>
+                    <span class="data-value" id="val-win-study">WAITING...</span>
+                </div>
+                <!-- ★追加：書斎照明の表示枠 -->
+                <div class="data-item">
+                    <span class="data-label">POWER (LIGHT)</span>
+                    <span class="data-value" id="val-study-lgt">WAITING...</span>
+                </div>
+            </div>
+            <div class="biometric-status" id="bio-study">BIOMETRIC: NO SENSOR</div>
+        </div>
+
+        <!-- 寝室 (SECTOR 02) -->
+        <div class="node-box active" id="node-bed">
+            <div class="node-header">▶ SECTOR 02</div>
+            <div class="node-title">BEDROOM</div>
+            <div class="sensor-data">
+                <div class="data-item env-item">
+                    <span class="data-label">ENVIRONMENT (HUB MINI)</span>
+                    <div class="env-meters">
+                        <div class="meter-group">
+                            <div class="meter-text" id="text-temp-bed">TEMP <span class="data-value" id="val-temp-bed">--°C</span></div>
+                            <div class="meter-bg"><div class="meter-fill" id="bar-temp-bed" style="width: 0%;"></div></div>
+                        </div>
+                        <div class="meter-group">
+                            <div class="meter-text">HUM <span class="data-value" id="val-hum-bed">--%</span></div>
+                            <div class="meter-bg"><div class="meter-fill" id="bar-hum-bed" style="width: 0%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">ACCESS (WINDOW)</span>
+                    <span class="data-value" id="val-win-bed">WAITING...</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">HVAC (AC)</span>
+                    <span class="data-value" id="ac-bed">UNKNOWN</span>
+                </div>
+            </div>
+            <div class="biometric-status" id="bio-bed" style="color:var(--delos-grey); border-color:#333;">WAITING FOR SIGNAL...</div>
+        </div>
+
+        <!-- 居間 (SECTOR 03) -->
+        <div class="node-box active" id="node-living">
+            <div class="node-header">▶ SECTOR 03</div>
+            <div class="node-title">LIVING ROOM</div>
+            <div class="sensor-data">
+                <div class="data-item env-item">
+                    <span class="data-label">ENVIRONMENT (HUB MINI)</span>
+                    <div class="env-meters">
+                        <div class="meter-group">
+                            <div class="meter-text" id="text-temp-living">TEMP <span class="data-value" id="val-temp-living">--°C</span></div>
+                            <div class="meter-bg"><div class="meter-fill" id="bar-temp-living" style="width: 0%;"></div></div>
+                        </div>
+                        <div class="meter-group">
+                            <div class="meter-text">HUM <span class="data-value" id="val-hum-living">--%</span></div>
+                            <div class="meter-bg"><div class="meter-fill" id="bar-hum-living" style="width: 0%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">HVAC (AC)</span>
+                    <span class="data-value" id="ac-living">COOLING 27°C</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">ACCESS (2F FRONT)</span>
+                    <span class="data-value" id="val-win-living-f">WAITING...</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">ACCESS (2F BACK)</span>
+                    <span class="data-value" id="val-win-living-b">WAITING...</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">POWER (DINING)</span>
+                    <span class="data-value" id="val-dining-lgt">WAITING...</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">POWER (LIVING)</span>
+                    <span class="data-value" id="val-living-lgt">WAITING...</span>
+                </div>
+            </div>
+            <div class="biometric-status" id="bio-living" style="color:var(--delos-grey); border-color:#333;">WAITING FOR SIGNAL...</div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button id="scan-btn" onclick="executeScan()">REFRESH TELEMETRY</button>
+    </div>
+
+    <script>
+        const today = new Date();
+        document.getElementById('current-date').innerText = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
+
+        function updateEnv(sector, temp, hum) {
+            const valTemp = document.getElementById(`val-temp-${sector}`);
+            const valHum = document.getElementById(`val-hum-${sector}`);
+            const barTemp = document.getElementById(`bar-temp-${sector}`);
+            const barHum = document.getElementById(`bar-hum-${sector}`);
+            const textTemp = document.getElementById(`text-temp-${sector}`);
+
+            if (temp !== "--" && temp !== undefined) {
+                valTemp.innerText = `${temp}°C`;
+                let width = Math.min((parseFloat(temp) / 40) * 100, 100);
+                barTemp.style.width = `${width}%`;
+
+                if (parseFloat(temp) >= 30.0) {
+                    barTemp.classList.add('warning');
+                    textTemp.classList.add('warning-text');
+                    valTemp.classList.add('val-alert');
+                } else {
+                    barTemp.classList.remove('warning');
+                    textTemp.classList.remove('warning-text');
+                    valTemp.classList.remove('val-alert');
+                    valTemp.classList.add('val-clear');
+                }
+            }
+            if (hum !== "--" && hum !== undefined) {
+                valHum.innerText = `${hum}%`;
+                barHum.style.width = `${hum}%`;
+            }
+        }
+
+        function updateWindow(elementId, state) {
+            const el = document.getElementById(elementId);
+            el.className = "data-value";
+            if (state === "close" || state === "closed") {
+                el.innerText = "SECURE";
+                el.classList.add('val-clear');
+            } else if (state === "open" || state === "opened") {
+                el.innerText = "BREACHED";
+                el.classList.add('val-alert');
+            } else {
+                el.innerText = "OFFLINE";
+                el.classList.add('val-offline');
+            }
+        }
+
+        function updateLight(elementId, powerState) {
+            const el = document.getElementById(elementId);
+            el.className = "data-value";
+            if (powerState === "on" || powerState === "ON") {
+                el.innerText = "ONLINE (ON)";
+                el.classList.add('val-clear');
+            } else if (powerState === "off" || powerState === "OFF") {
+                el.innerText = "ONLINE (OFF)";
+                el.classList.add('val-clear');
+            } else {
+                el.innerText = "OFFLINE";
+                el.classList.add('val-offline');
+            }
+        }
+
+        function updatePresence(sector, isPresent) {
+            const box = document.getElementById(`node-${sector}`);
+            const bio = document.getElementById(`bio-${sector}`);
+            
+            if (isPresent) {
+                box.classList.add('alert');
+                bio.innerText = "BIOMETRIC: HOST DETECTED";
+                bio.style.color = "var(--delos-alert)";
+                bio.style.borderColor = "var(--delos-alert)";
+            } else {
+                box.classList.remove('alert');
+                bio.innerText = "BIOMETRIC: CLEAR";
+                bio.style.color = "var(--delos-grey)";
+                bio.style.borderColor = "#333";
+            }
+        }
+
+        async function executeScan() {
+            const btn = document.getElementById('scan-btn');
+            const syncUi = document.getElementById('sync-ui');
+            const syncRing = document.getElementById('sync-ring');
+            const syncPercent = document.getElementById('sync-percent');
+            
+            btn.disabled = true;
+            btn.innerText = "INITIALIZING...";
+            
+            const nodes = ['study', 'bed', 'living'];
+            nodes.forEach(id => { document.getElementById(`node-${id}`).style.opacity = '0.4'; });
+
+            syncUi.classList.add('active');
+            let percent = 0;
+            syncRing.style.transition = 'stroke-dashoffset 1.5s linear';
+            syncRing.style.strokeDashoffset = '0';
+
+            const interval = setInterval(() => {
+                percent += (100 / (1500 / 30));
+                if (percent >= 100) { percent = 100; clearInterval(interval); }
+                syncPercent.innerText = Math.floor(percent).toString().padStart(3, '0') + "%";
+            }, 30);
+
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // データの反映
+                updateEnv('study', data.study.temp, data.study.hum);
+                updateWindow('val-win-study', data.study.window);
+                updateLight('val-study-lgt', data.study.light); // 書斎照明
+
+                updateEnv('bed', data.bed.temp, data.bed.hum);
+                updateWindow('val-win-bed', data.bed.window);
+                updatePresence('bed', data.bed.presence);
+
+                updateEnv('living', data.living.temp, data.living.hum);
+                updateWindow('val-win-living-f', data.living.window_front);
+                updateWindow('val-win-living-b', data.living.window_back);
+                updatePresence('living', data.living.presence);
+
+                updateLight('val-dining-lgt', data.living.dining_light);
+                updateLight('val-living-lgt', data.living.living_light);
+
+            } catch (error) {
+                console.error("API ERROR:", error);
+                alert("SYSTEM ERROR: UPLINK FAILED");
+            } finally {
+                syncUi.classList.remove('active');
+                nodes.forEach(id => { document.getElementById(`node-${id}`).style.opacity = '1'; });
+                syncRing.style.transition = 'none';
+                syncRing.style.strokeDashoffset = '144';
+                
+                btn.disabled = false;
+                btn.innerText = "REFRESH TELEMETRY";
+            }
+        }
+    </script>
+</body>
+</html>
