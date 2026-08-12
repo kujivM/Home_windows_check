@@ -19,12 +19,23 @@ LINE_ACCESS_TOKEN = config.LINE_ACCESS_TOKEN
 LINE_USER_ID = config.LINE_USER_ID
 
 # 3. 監視したい開閉センサーの「デバイスID」と「窓の名前」
-# 先ほど取得したデバイスIDを左側に、分かりやすい名前を右側に書きます
 TARGET_WINDOWS = {
     'B0E9FE976456': '食堂側窓',
     'B0E9FEAF5149': '居間側窓',
     'B0E9FEE6C7BA': '書斎側窓',
     'B0E9FEFF4E9E': '寝室窓'
+}
+
+# 4. 各部屋の「存在センサー」と「エアコン」のデバイスID
+TARGET_ROOMS = {
+    '寝室': {
+        'sensor_id': 'B0E9FEB96D56',
+        'ac_id': '01-202608111138-03240109'
+    },
+    '居間': {
+        'sensor_id': 'B0E9FED6E43E',
+        'ac_id': '01-202608111119-90959291'
+    }
 }
 
 # ==========================================
@@ -69,49 +80,107 @@ def send_line_message(text):
     else:
         print(f"LINE通知エラー: {response.status_code}\n{response.text}")
 
+def check_presence(headers, sensor_id):
+    """存在センサーの状態を確認する関数"""
+    url = f"https://api.switch-bot.com/v1.1/devices/{sensor_id}/status"
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            body = data.get('body', {})
+            # 人がいる(presence) または 動体検知(True) の場合は人がいると判定
+            if body.get('presenceState') == 'presence' or body.get('moveDetected') == True:
+                return True
+            else:
+                return False
+    except Exception as e:
+        print(f"センサーの通信エラーが発生しました: {e}")
+    
+    # エラー時は安全のため「人がいる」と仮定して、誤ってエアコンを消すのを防ぐ
+    return True
+
+def turn_off_ac(headers, ac_id):
+    """エアコンをOFFにする関数"""
+    url = f"https://api.switch-bot.com/v1.1/devices/{ac_id}/commands"
+    data = {
+        "commandType": "command",
+        "command": "turnOff",
+        "parameter": "default"
+    }
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            return True
+    except Exception as e:
+        print(f"エアコンOFF送信エラー: {e}")
+    return False
+
 def main():
-    print("窓の状態をチェックしています...")
     headers = get_sb_headers()
+    open_windows = []
 
-    open_windows = [] # 開いている窓の名前を入れるリスト
-
-    # 設定した4つのデバイスを順番にチェック
+    # 1. 窓の開閉チェック
+    print("窓の状態をチェックしています...")
     for device_id, window_name in TARGET_WINDOWS.items():
         url = f"https://api.switch-bot.com/v1.1/devices/{device_id}/status"
-
         try:
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
                 data = response.json()
-                # センサーの状態（open か close）を取得
                 open_state = data.get('body', {}).get('openState')
-
                 print(f"{window_name}: {open_state}")
-
                 if open_state == "open" or open_state == "timeOutNotClose":
                     open_windows.append(window_name)
             else:
                 print(f"[{window_name}] の状態取得に失敗しました: {response.status_code}")
-
         except Exception as e:
             print(f"[{window_name}] 通信エラーが発生しました: {e}")
-
-        # APIの制限に引っかからないよう、1秒待機
+        
+        # API制限対策
         time.sleep(1)
 
-    # チェック結果からLINEのメッセージを作成して送信
-    if len(open_windows) > 0:
-        # 開いている窓がある場合
-        windows_str = "、".join(open_windows)
-        message = f"\u26A0\uFE0F {windows_str} が開いています！確認してください。"
-    else:
-        # すべて閉まっている場合
-        message = "\u2705 すべての窓が閉まっています。戸締まりOK！"
+    # 2. 各部屋の人の有無をチェックしてエアコンを操作
+    print("各部屋の人の有無をチェックしています...")
+    ac_messages = []
+    for room_name, devices in TARGET_ROOMS.items():
+        sensor_id = devices['sensor_id']
+        ac_id = devices['ac_id']
+        
+        if 'ここに' in sensor_id or 'ここに' in ac_id:
+            continue
+            
+        is_someone_present = check_presence(headers, sensor_id)
+        
+        if is_someone_present:
+            ac_messages.append(f"👤 {room_name}: 人がいるため、エアコンはそのままにしました。")
+        else:
+            if turn_off_ac(headers, ac_id):
+                ac_messages.append(f"❄️ {room_name}: 誰もいないため、エアコンを自動でOFFにしました。")
+            else:
+                ac_messages.append(f"❌ {room_name}: エアコンのOFF操作に失敗しました。")
+        
+        time.sleep(1)
 
+    # 3. LINEメッセージの組み立て
+    message_lines = []
+
+    # 窓のメッセージ
+    if len(open_windows) > 0:
+        windows_str = "、".join(open_windows)
+        message_lines.append(f"\u26A0\uFE0F {windows_str} が開いています！確認してください。")
+    else:
+        message_lines.append("\u2705 すべての窓が閉まっています。戸締まりOK！")
+
+    # エアコンのメッセージを追加
+    if len(ac_messages) > 0:
+        message_lines.append("") # 1行空ける
+        for msg in ac_messages:
+            message_lines.append(msg)
+    
+    # メッセージを結合して送信
+    message = "\n".join(message_lines)
     print("\n--- 判定結果 ---")
     print(message)
-
-    # LINEに送信
     send_line_message(message)
 
 if __name__ == "__main__":
