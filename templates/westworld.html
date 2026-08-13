@@ -2,10 +2,20 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#090e11">
+    
+    <!-- ★ここを修正：Pythonから正式な証明書を受け取る -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <title>DELOS SYSTEM - FULL FACILITY MATRIX</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
+        /* --- スタイル（CSS）は今のままでOKです --- */
         :root {
             --delos-cyan: #4df8ff;
             --delos-cyan-dim: rgba(77, 248, 255, 0.15);
@@ -15,15 +25,19 @@
             --delos-offline: #a35c27;
         }
 
+        * { box-sizing: border-box; }
+
         body {
             background-color: var(--delos-bg);
             color: var(--delos-cyan);
             font-family: 'Rajdhani', sans-serif;
             margin: 0;
-            padding: 2vw;
+            padding: 10px 15px;
             display: flex;
             flex-direction: column;
-            min-height: 90vh;
+            /* アドレスバーを考慮した完璧な高さ指定 */
+            height: 100dvh; 
+            overflow: hidden;
             text-transform: uppercase;
             background-image: 
                 linear-gradient(rgba(77, 248, 255, 0.03) 1px, transparent 1px),
@@ -32,112 +46,74 @@
         }
 
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--delos-cyan-dim);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            padding-bottom: 8px; margin-bottom: 10px; flex-shrink: 0;
         }
 
-        .host-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        .host-profile { display: flex; align-items: center; gap: 12px; }
 
         .host-circle {
-            width: 60px;
-            height: 60px;
-            border: 2px solid var(--delos-cyan);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.5rem;
-            text-align: center;
-            box-shadow: 0 0 10px var(--delos-cyan-dim);
-            position: relative;
+            width: 50px; height: 50px; border: 2px solid var(--delos-cyan);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 0.45rem; text-align: center; box-shadow: 0 0 10px var(--delos-cyan-dim);
+            position: relative; flex-shrink: 0;
         }
         
         .host-circle::before {
-            content: '';
-            position: absolute;
-            top: -4px; left: -4px; right: -4px; bottom: -4px;
-            border: 1px dashed var(--delos-grey);
-            border-radius: 50%;
+            content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px;
+            border: 1px dashed var(--delos-grey); border-radius: 50%;
             animation: rotate 20s linear infinite;
         }
 
         @keyframes rotate { 100% { transform: rotate(360deg); } }
 
-        .system-info {
-            font-size: 0.6rem; 
-            color: var(--delos-grey);
-            font-family: 'Share Tech Mono', monospace;
-            line-height: 1.4;
-        }
+        .system-info { font-size: 0.55rem; color: var(--delos-grey); font-family: 'Share Tech Mono', monospace; line-height: 1.3; }
 
         .sync-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid #333;
-            border-radius: 40px;
-            padding: 5px 20px 5px 5px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease;
+            display: flex; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333; border-radius: 40px; padding: 4px 15px 4px 4px;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease;
         }
 
-        .sync-container.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .sync-circle {
-            position: relative;
-            width: 50px;
-            height: 50px;
-        }
-
-        .sync-circle svg {
-            transform: rotate(-90deg);
-            width: 100%;
-            height: 100%;
-        }
-
+        .sync-container.active { opacity: 1; visibility: visible; }
+        .sync-circle { position: relative; width: 40px; height: 40px; }
+        .sync-circle svg { transform: rotate(-90deg); width: 100%; height: 100%; }
         .sync-bg { fill: none; stroke: #222; stroke-width: 4; }
-        .sync-progress {
-            fill: none; stroke: #fff; stroke-width: 4;
-            stroke-dasharray: 144; stroke-dashoffset: 144; stroke-linecap: round;
-        }
-
+        .sync-progress { fill: none; stroke: #fff; stroke-width: 4; stroke-dasharray: 144; stroke-dashoffset: 144; stroke-linecap: round; }
         .sync-percent {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             display: flex; align-items: center; justify-content: center;
-            font-size: 0.65rem; font-family: 'Share Tech Mono', monospace; color: #fff;
+            font-size: 0.55rem; font-family: 'Share Tech Mono', monospace; color: #fff;
         }
-
-        .sync-text { display: flex; flex-direction: column; font-family: 'Share Tech Mono', monospace; line-height: 1.2; }
-        .sync-title { font-size: 0.9rem; color: #fff; letter-spacing: 1px; }
-        .sync-sub { font-size: 0.6rem; color: var(--delos-grey); }
-        .sync-path { font-size: 0.5rem; color: var(--delos-grey); opacity: 0.7; }
+        .sync-text { display: flex; flex-direction: column; font-family: 'Share Tech Mono', monospace; line-height: 1.1; }
+        .sync-title { font-size: 0.8rem; color: #fff; letter-spacing: 1px; }
+        .sync-sub { font-size: 0.5rem; color: var(--delos-grey); }
 
         .matrix-title {
-            color: var(--delos-grey); font-size: 0.8rem; letter-spacing: 2px;
-            margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
-            font-family: 'Share Tech Mono', monospace;
+            color: var(--delos-grey); font-size: 0.7rem; letter-spacing: 2px;
+            margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
+            font-family: 'Share Tech Mono', monospace; flex-shrink: 0;
         }
         .matrix-title::before { content: '◆'; color: var(--delos-cyan); }
 
-        .facility-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; flex-grow: 1; }
+        /* ==========================================
+           グリッド部分のみスクロール可能にする設定
+           ========================================== */
+        .facility-grid {
+            display: grid; gap: 10px; flex-grow: 1; min-height: 0;
+            overflow-y: auto; /* はみ出たらここだけスクロール */
+            padding-bottom: 5px;
+            scrollbar-width: none; /* Firefox用スクロールバー非表示 */
+        }
+        .facility-grid::-webkit-scrollbar {
+            display: none; /* Chrome(Pixel)用スクロールバー非表示 */
+        }
 
         .node-box {
             background-color: rgba(0, 0, 0, 0.6); border: 1px solid var(--delos-cyan);
-            padding: 15px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-            position: relative; transition: all 0.3s ease; display: flex; flex-direction: column; gap: 10px;
+            padding: 10px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            position: relative; display: flex; flex-direction: column; gap: 6px;
         }
 
         .node-box.active { box-shadow: inset 0 0 10px var(--delos-cyan-dim); }
@@ -146,20 +122,20 @@
             box-shadow: inset 0 0 15px rgba(255, 51, 85, 0.2);
         }
 
-        .node-header { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--delos-grey); border-bottom: 1px solid #222; padding-bottom: 3px; }
-        .node-title { font-size: 1.4rem; font-weight: 700; letter-spacing: 1px; color: var(--delos-cyan); }
+        .node-header { font-family: 'Share Tech Mono', monospace; font-size: 0.5rem; color: var(--delos-grey); border-bottom: 1px solid #222; padding-bottom: 2px; }
+        .node-title { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; color: var(--delos-cyan); margin-bottom: 2px; }
         .node-box.alert .node-title { color: var(--delos-alert); }
 
-        .sensor-data { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; }
-        .data-item { background: rgba(77, 248, 255, 0.05); border-left: 2px solid var(--delos-cyan); padding: 6px 8px; display: flex; flex-direction: column; justify-content: center; }
+        .sensor-data { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; }
+        .data-item { background: rgba(77, 248, 255, 0.05); border-left: 2px solid var(--delos-cyan); padding: 4px 6px; display: flex; flex-direction: column; justify-content: center; }
         .data-item.env-item { grid-column: span 2; }
-        .data-label { color: var(--delos-grey); font-size: 0.55rem; margin-bottom: 4px; }
+        .data-label { color: var(--delos-grey); font-size: 0.5rem; margin-bottom: 2px; }
         .data-value { font-weight: bold; color: #fff; }
 
-        .env-meters { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+        .env-meters { display: flex; flex-direction: column; gap: 5px; width: 100%; }
         .meter-group { display: flex; flex-direction: column; gap: 2px; }
-        .meter-text { display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--delos-cyan); }
-        .meter-bg { width: 100%; height: 4px; background-color: rgba(77, 248, 255, 0.1); border: 1px solid rgba(77, 248, 255, 0.2); }
+        .meter-text { display: flex; justify-content: space-between; font-size: 0.55rem; color: var(--delos-cyan); }
+        .meter-bg { width: 100%; height: 3px; background-color: rgba(77, 248, 255, 0.1); border: 1px solid rgba(77, 248, 255, 0.2); }
         .meter-fill { height: 100%; background-color: var(--delos-cyan); box-shadow: 0 0 5px var(--delos-cyan); transition: width 0.5s ease; }
         
         .meter-fill.warning { background-color: var(--delos-alert); box-shadow: 0 0 5px var(--delos-alert); }
@@ -172,36 +148,69 @@
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         .biometric-status {
-            margin-top: auto; padding: 8px; text-align: center; font-size: 0.9rem;
+            margin-top: auto; padding: 4px; text-align: center; font-size: 0.75rem;
             font-weight: 600; letter-spacing: 2px; background: var(--delos-cyan-dim);
             border-top: 1px dashed var(--delos-cyan); transition: all 0.3s ease;
         }
 
-        .node-box.alert .biometric-status {
-            background: rgba(255, 51, 85, 0.15); border-top: 1px dashed var(--delos-alert); color: var(--delos-alert);
-        }
+        .node-box.alert .biometric-status { background: rgba(255, 51, 85, 0.15); border-top: 1px dashed var(--delos-alert); color: var(--delos-alert); }
 
-        .controls { margin-top: 20px; border-top: 1px solid var(--delos-cyan-dim); padding-top: 15px; display: flex; justify-content: flex-end; }
+        /* ==========================================
+           ボタン領域（絶対に下部に固定される）
+           ========================================== */
+        .controls { 
+            margin-top: 10px; border-top: 1px solid var(--delos-cyan-dim); 
+            padding-top: 10px; padding-bottom: 5px; display: flex; 
+            justify-content: flex-end; flex-shrink: 0; /* 絶対に縮まない */
+            background-color: var(--delos-bg); z-index: 10;
+        }
         button {
             background: transparent; color: var(--delos-cyan); border: 1px solid var(--delos-cyan);
             padding: 8px 25px; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 1rem;
             letter-spacing: 2px; cursor: pointer; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-            transition: all 0.2s;
+            transition: all 0.2s; outline: none;
         }
-        button:hover:not(:disabled) { background: var(--delos-cyan); color: var(--delos-bg); }
-        button:disabled { color: var(--delos-grey); border-color: var(--delos-grey); cursor: not-allowed; }
+        button:active { background: var(--delos-cyan); color: var(--delos-bg); }
+        button:disabled { color: var(--delos-grey); border-color: var(--delos-grey); }
+
+        /* スマホ縦向き */
+        @media (orientation: portrait) {
+            .facility-grid { grid-template-columns: 1fr; gap: 8px; }
+            .node-box { padding: 8px; gap: 4px; }
+            .node-title { font-size: 1.1rem; }
+            .sensor-data { gap: 4px; }
+            .data-item { padding: 3px 5px; }
+        }
+
+        /* スマホ横向き */
+        @media (orientation: landscape) {
+            body { padding: 8px 15px; }
+            .header { margin-bottom: 5px; padding-bottom: 5px; }
+            .host-circle { width: 35px; height: 35px; font-size: 0.4rem; }
+            .system-info { font-size: 0.5rem; }
+            .matrix-title { margin-bottom: 5px; font-size: 0.65rem; }
+            .facility-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .node-box { padding: 8px; gap: 4px; }
+            .node-title { font-size: 1rem; }
+            .sensor-data { gap: 3px; font-size: 0.55rem; }
+            .data-item { padding: 3px; }
+            .data-label { font-size: 0.4rem; margin-bottom: 1px; }
+            .env-meters { gap: 3px; }
+            .meter-text { font-size: 0.5rem; }
+            .biometric-status { padding: 3px; font-size: 0.65rem; }
+            .controls { margin-top: 5px; padding-top: 5px; }
+            button { padding: 6px 15px; font-size: 0.8rem; }
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="host-profile">
-            <div class="host-circle">
-                AUTH<br>USER
-            </div>
+            <div class="host-circle">AUTH<br>USER</div>
             <div class="system-info">
                 FACILITY: YOKOHAMA RESIDENCE<br>
-                DATE: <span id="current-date">2026.08.12</span><br>
+                DATE: <span id="current-date">2026.08.13</span><br>
                 SYSTEM STATUS: <span style="color:var(--delos-cyan);">ONLINE</span><br>
                 UPLINK: SWITCHBOT API V1.1
             </div>
@@ -218,7 +227,6 @@
             <div class="sync-text">
                 <div class="sync-title">FETCHING TELEMETRY...</div>
                 <div class="sync-sub">Sync in progress...</div>
-                <div class="sync-path">api.switch-bot.com/v1.1/devices ++Data+</div>
             </div>
         </div>
     </div>
@@ -347,7 +355,6 @@
             const textTemp = document.getElementById(`text-temp-${sector}`);
             const textHum = document.getElementById(`text-hum-${sector}`);
 
-            // 温度の処理（エラー演出追加）
             if (temp === "RESTRICTED") {
                 valTemp.innerText = "NO SIGNAL";
                 valTemp.className = "data-value val-alert";
@@ -358,11 +365,9 @@
                 valTemp.innerText = `${temp}°C`;
                 valTemp.className = "data-value val-clear";
                 textTemp.classList.remove('warning-text');
-                
                 let width = Math.min((parseFloat(temp) / 40) * 100, 100);
                 barTemp.style.width = `${width}%`;
                 barTemp.className = "meter-fill";
-
                 if (parseFloat(temp) >= 30.0) {
                     barTemp.classList.add('warning');
                     textTemp.classList.add('warning-text');
@@ -370,7 +375,6 @@
                 }
             }
 
-            // 湿度の処理（エラー演出追加）
             if (hum === "RESTRICTED") {
                 valHum.innerText = "NO SIGNAL";
                 valHum.className = "data-value val-alert";
@@ -381,7 +385,6 @@
                 valHum.innerText = `${hum}%`;
                 valHum.className = "data-value val-clear";
                 textHum.classList.remove('warning-text');
-                
                 barHum.style.width = `${hum}%`;
                 barHum.className = "meter-fill";
             }
@@ -391,14 +394,11 @@
             const el = document.getElementById(elementId);
             el.className = "data-value";
             if (state === "close" || state === "closed") {
-                el.innerText = "SECURE";
-                el.classList.add('val-clear');
+                el.innerText = "SECURE"; el.classList.add('val-clear');
             } else if (state === "open" || state === "opened") {
-                el.innerText = "BREACHED";
-                el.classList.add('val-alert');
+                el.innerText = "BREACHED"; el.classList.add('val-alert');
             } else {
-                el.innerText = "OFFLINE";
-                el.classList.add('val-offline');
+                el.innerText = "OFFLINE"; el.classList.add('val-offline');
             }
         }
 
@@ -406,21 +406,17 @@
             const el = document.getElementById(elementId);
             el.className = "data-value";
             if (powerState === "on" || powerState === "ON") {
-                el.innerText = "ONLINE (ON)";
-                el.classList.add('val-clear');
+                el.innerText = "ONLINE (ON)"; el.classList.add('val-clear');
             } else if (powerState === "off" || powerState === "OFF") {
-                el.innerText = "ONLINE (OFF)";
-                el.classList.add('val-clear');
+                el.innerText = "ONLINE (OFF)"; el.classList.add('val-clear');
             } else {
-                el.innerText = "OFFLINE";
-                el.classList.add('val-offline');
+                el.innerText = "OFFLINE"; el.classList.add('val-offline');
             }
         }
 
         function updatePresence(sector, isPresent) {
             const box = document.getElementById(`node-${sector}`);
             const bio = document.getElementById(`bio-${sector}`);
-            
             if (isPresent) {
                 box.classList.add('alert');
                 bio.innerText = "BIOMETRIC: HOST DETECTED";
@@ -440,9 +436,7 @@
             const syncRing = document.getElementById('sync-ring');
             const syncPercent = document.getElementById('sync-percent');
             
-            btn.disabled = true;
-            btn.innerText = "INITIALIZING...";
-            
+            btn.disabled = true; btn.innerText = "INITIALIZING...";
             const nodes = ['study', 'bed', 'living'];
             nodes.forEach(id => { document.getElementById(`node-${id}`).style.opacity = '0.4'; });
 
@@ -460,7 +454,6 @@
             try {
                 const response = await fetch('/api/status');
                 const data = await response.json();
-
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
                 updateEnv('study', data.study.temp, data.study.hum);
@@ -478,7 +471,6 @@
 
                 updateLight('val-dining-lgt', data.living.dining_light);
                 updateLight('val-living-lgt', data.living.living_light);
-
             } catch (error) {
                 console.error("API ERROR:", error);
                 alert("SYSTEM ERROR: UPLINK FAILED");
@@ -487,9 +479,7 @@
                 nodes.forEach(id => { document.getElementById(`node-${id}`).style.opacity = '1'; });
                 syncRing.style.transition = 'none';
                 syncRing.style.strokeDashoffset = '144';
-                
-                btn.disabled = false;
-                btn.innerText = "REFRESH TELEMETRY";
+                btn.disabled = false; btn.innerText = "REFRESH TELEMETRY";
             }
         }
     </script>

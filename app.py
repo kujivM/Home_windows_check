@@ -62,6 +62,30 @@ def fetch_device_status(device_id):
 def index():
     return render_template('westworld.html')
 
+# ★ここが追加部分：Chromeを納得させるための正式なアプリ宣言書
+@app.route('/manifest.json')
+def manifest():
+    return jsonify({
+        "name": "DELOS SYSTEM MATRIX",
+        "short_name": "DELOS",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#090e11",
+        "theme_color": "#090e11",
+        "icons": [
+            {
+                "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzA5MGUxMSIvPjx0ZXh0IHg9Ijk2IiB5PSI5NiIgZmlsbD0iIzRkZjhmZiIgZm9udC1zaXplPSIzMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkRFTE9TPC90ZXh0Pjwvc3ZnPg==",
+                "sizes": "192x192",
+                "type": "image/svg+xml"
+            },
+            {
+                "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzA5MGUxMSIvPjx0ZXh0IHg9IjI1NiIgeT0iMjU2IiBmaWxsPSIjNGRmOGZmIiBmb250LXNpemU9IjgwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+REVMT1M8L3RleHQ+PC9zdmc+",
+                "sizes": "512x512",
+                "type": "image/svg+xml"
+            }
+        ]
+    })
+
 @app.route('/api/status')
 def get_status():
     response_data = {
@@ -75,7 +99,6 @@ def get_status():
         }
     }
 
-    # 書斎 (ここは本物の温湿度が取れます)
     s_env = fetch_device_status(DEVICE_IDS["study_meter"])
     if s_env:
         response_data["study"]["temp"] = s_env.get("temperature", "--")
@@ -87,7 +110,6 @@ def get_status():
     if s_lgt:
         response_data["study"]["light"] = s_lgt.get("power", "ON")
 
-    # 寝室
     b_win = fetch_device_status(DEVICE_IDS["bed_window"])
     if b_win:
         response_data["bed"]["window"] = b_win.get("openState", "UNKNOWN")
@@ -95,7 +117,6 @@ def get_status():
     if b_pre:
         response_data["bed"]["presence"] = (b_pre.get('presenceState') == 'presence' or b_pre.get('moveDetected') == True)
 
-    # 居間
     l_win_f = fetch_device_status(DEVICE_IDS["living_window_front"])
     if l_win_f:
         response_data["living"]["window_front"] = l_win_f.get("openState", "UNKNOWN")
