@@ -240,7 +240,7 @@
                             <div class="meter-bg"><div class="meter-fill" id="bar-temp-study" style="width: 0%;"></div></div>
                         </div>
                         <div class="meter-group">
-                            <div class="meter-text">HUM <span class="data-value" id="val-hum-study">--%</span></div>
+                            <div class="meter-text" id="text-hum-study">HUM <span class="data-value" id="val-hum-study">--%</span></div>
                             <div class="meter-bg"><div class="meter-fill" id="bar-hum-study" style="width: 0%;"></div></div>
                         </div>
                     </div>
@@ -249,7 +249,6 @@
                     <span class="data-label">ACCESS (WINDOW)</span>
                     <span class="data-value" id="val-win-study">WAITING...</span>
                 </div>
-                <!-- ★追加：書斎照明の表示枠 -->
                 <div class="data-item">
                     <span class="data-label">POWER (LIGHT)</span>
                     <span class="data-value" id="val-study-lgt">WAITING...</span>
@@ -271,7 +270,7 @@
                             <div class="meter-bg"><div class="meter-fill" id="bar-temp-bed" style="width: 0%;"></div></div>
                         </div>
                         <div class="meter-group">
-                            <div class="meter-text">HUM <span class="data-value" id="val-hum-bed">--%</span></div>
+                            <div class="meter-text" id="text-hum-bed">HUM <span class="data-value" id="val-hum-bed">--%</span></div>
                             <div class="meter-bg"><div class="meter-fill" id="bar-hum-bed" style="width: 0%;"></div></div>
                         </div>
                     </div>
@@ -301,7 +300,7 @@
                             <div class="meter-bg"><div class="meter-fill" id="bar-temp-living" style="width: 0%;"></div></div>
                         </div>
                         <div class="meter-group">
-                            <div class="meter-text">HUM <span class="data-value" id="val-hum-living">--%</span></div>
+                            <div class="meter-text" id="text-hum-living">HUM <span class="data-value" id="val-hum-living">--%</span></div>
                             <div class="meter-bg"><div class="meter-fill" id="bar-hum-living" style="width: 0%;"></div></div>
                         </div>
                     </div>
@@ -346,26 +345,45 @@
             const barTemp = document.getElementById(`bar-temp-${sector}`);
             const barHum = document.getElementById(`bar-hum-${sector}`);
             const textTemp = document.getElementById(`text-temp-${sector}`);
+            const textHum = document.getElementById(`text-hum-${sector}`);
 
-            if (temp !== "--" && temp !== undefined) {
+            // 温度の処理（エラー演出追加）
+            if (temp === "RESTRICTED") {
+                valTemp.innerText = "NO SIGNAL";
+                valTemp.className = "data-value val-alert";
+                textTemp.classList.add('warning-text');
+                barTemp.style.width = "100%";
+                barTemp.className = "meter-fill warning";
+            } else if (temp !== "--" && temp !== undefined) {
                 valTemp.innerText = `${temp}°C`;
+                valTemp.className = "data-value val-clear";
+                textTemp.classList.remove('warning-text');
+                
                 let width = Math.min((parseFloat(temp) / 40) * 100, 100);
                 barTemp.style.width = `${width}%`;
+                barTemp.className = "meter-fill";
 
                 if (parseFloat(temp) >= 30.0) {
                     barTemp.classList.add('warning');
                     textTemp.classList.add('warning-text');
-                    valTemp.classList.add('val-alert');
-                } else {
-                    barTemp.classList.remove('warning');
-                    textTemp.classList.remove('warning-text');
-                    valTemp.classList.remove('val-alert');
-                    valTemp.classList.add('val-clear');
+                    valTemp.classList.replace('val-clear', 'val-alert');
                 }
             }
-            if (hum !== "--" && hum !== undefined) {
+
+            // 湿度の処理（エラー演出追加）
+            if (hum === "RESTRICTED") {
+                valHum.innerText = "NO SIGNAL";
+                valHum.className = "data-value val-alert";
+                textHum.classList.add('warning-text');
+                barHum.style.width = "100%";
+                barHum.className = "meter-fill warning";
+            } else if (hum !== "--" && hum !== undefined) {
                 valHum.innerText = `${hum}%`;
+                valHum.className = "data-value val-clear";
+                textHum.classList.remove('warning-text');
+                
                 barHum.style.width = `${hum}%`;
+                barHum.className = "meter-fill";
             }
         }
 
@@ -445,10 +463,9 @@
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
-                // データの反映
                 updateEnv('study', data.study.temp, data.study.hum);
                 updateWindow('val-win-study', data.study.window);
-                updateLight('val-study-lgt', data.study.light); // 書斎照明
+                updateLight('val-study-lgt', data.study.light); 
 
                 updateEnv('bed', data.bed.temp, data.bed.hum);
                 updateWindow('val-win-bed', data.bed.window);

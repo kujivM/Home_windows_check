@@ -172,6 +172,7 @@ def main():
         message_lines.append("\u2705 すべての窓が閉まっています。戸締まりOK！")
 
     # エアコンのメッセージを追加
+    
     if len(ac_messages) > 0:
         message_lines.append("") # 1行空ける
         for msg in ac_messages:

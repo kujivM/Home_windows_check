@@ -16,15 +16,13 @@ DEVICE_IDS = {
     # --- 書斎 (SECTOR 01) ---
     "study_meter": "E50F34EC2ECF",
     "study_window": "B0E9FEE6C7BA",
-    "study_light": "C1AE772DEF7B", # ★追加
+    "study_light": "C1AE772DEF7B", 
 
     # --- 寝室 (SECTOR 02) ---
-    "bed_hub": "8CFD4984E7F6",
     "bed_window": "B0E9FEFF4E9E",
     "bed_presence": "B0E9FEB96D56", 
 
     # --- 居間 (SECTOR 03) ---
-    "living_hub": "B0A604C54DA2",
     "living_window_front": "B0E9FEAF5149",
     "living_window_back": "B0E9FE976456",
     "living_presence": "B0E9FED6E43E",
@@ -49,7 +47,7 @@ def get_sb_headers():
     }
 
 def fetch_device_status(device_id):
-    if not device_id or "ここに" in device_id:
+    if not device_id:
         return None
     url = f"https://api.switch-bot.com/v1.1/devices/{device_id}/status"
     try:
@@ -68,16 +66,16 @@ def index():
 def get_status():
     response_data = {
         "study": {"temp": "--", "hum": "--", "window": "UNKNOWN", "light": "OFFLINE"},
-        "bed": {"temp": "--", "hum": "--", "window": "UNKNOWN", "presence": False},
+        "bed": {"temp": "RESTRICTED", "hum": "RESTRICTED", "window": "UNKNOWN", "presence": False},
         "living": {
-            "temp": "--", "hum": "--", 
+            "temp": "RESTRICTED", "hum": "RESTRICTED", 
             "window_front": "UNKNOWN", "window_back": "UNKNOWN", 
             "presence": False,
             "dining_light": "OFFLINE", "living_light": "OFFLINE"
         }
     }
 
-    # 書斎
+    # 書斎 (ここは本物の温湿度が取れます)
     s_env = fetch_device_status(DEVICE_IDS["study_meter"])
     if s_env:
         response_data["study"]["temp"] = s_env.get("temperature", "--")
@@ -90,10 +88,6 @@ def get_status():
         response_data["study"]["light"] = s_lgt.get("power", "ON")
 
     # 寝室
-    b_env = fetch_device_status(DEVICE_IDS["bed_hub"])
-    if b_env:
-        response_data["bed"]["temp"] = b_env.get("temperature", "--")
-        response_data["bed"]["hum"] = b_env.get("humidity", "--")
     b_win = fetch_device_status(DEVICE_IDS["bed_window"])
     if b_win:
         response_data["bed"]["window"] = b_win.get("openState", "UNKNOWN")
@@ -102,10 +96,6 @@ def get_status():
         response_data["bed"]["presence"] = (b_pre.get('presenceState') == 'presence' or b_pre.get('moveDetected') == True)
 
     # 居間
-    l_env = fetch_device_status(DEVICE_IDS["living_hub"])
-    if l_env:
-        response_data["living"]["temp"] = l_env.get("temperature", "--")
-        response_data["living"]["hum"] = l_env.get("humidity", "--")
     l_win_f = fetch_device_status(DEVICE_IDS["living_window_front"])
     if l_win_f:
         response_data["living"]["window_front"] = l_win_f.get("openState", "UNKNOWN")
