@@ -395,7 +395,8 @@
             el.className = "data-value";
             if (state === "close" || state === "closed") {
                 el.innerText = "SECURE"; el.classList.add('val-clear');
-            } else if (state === "open" || state === "opened") {
+            // ↓ ★ここに "timeOutNotClose" の条件を追加しました！
+            } else if (state === "open" || state === "opened" || state === "timeOutNotClose") {
                 el.innerText = "BREACHED"; el.classList.add('val-alert');
             } else {
                 el.innerText = "OFFLINE"; el.classList.add('val-offline');
