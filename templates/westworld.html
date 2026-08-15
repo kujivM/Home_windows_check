@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#090e11">
     
     <!-- ★ここを修正：Pythonから正式な証明書を受け取る -->
@@ -27,6 +27,11 @@
 
         * { box-sizing: border-box; }
 
+        html {
+            background-color: var(--delos-bg);
+            height: 100%;
+        }
+
         body {
             background-color: var(--delos-bg);
             color: var(--delos-cyan);
@@ -36,7 +41,7 @@
             display: flex;
             flex-direction: column;
             /* アドレスバーを考慮した完璧な高さ指定 */
-            height: 100dvh; 
+            height: 100%; 
             overflow: hidden;
             text-transform: uppercase;
             background-image: 
@@ -160,8 +165,11 @@
            ========================================== */
         .controls { 
             margin-top: 10px; border-top: 1px solid var(--delos-cyan-dim); 
-            padding-top: 10px; padding-bottom: 5px; display: flex; 
-            justify-content: flex-end; flex-shrink: 0; /* 絶対に縮まない */
+            padding-top: 10px; 
+            /* ★ここを変更：スマホのシステムバーの高さ分だけ、自動で余白を追加します */
+            padding-bottom: 25px; 
+            display: flex; 
+            justify-content: flex-end; flex-shrink: 0; 
             background-color: var(--delos-bg); z-index: 10;
         }
         button {
@@ -340,6 +348,9 @@
     </div>
 
     <div class="controls">
+        <!-- ★この1行を追加（2ページ目へのリンク） -->
+        <button onclick="location.href='/system'" style="margin-right:auto; border-color:var(--delos-grey); color:var(--delos-grey);">CORE DIAGNOSTICS</button>
+        
         <button id="scan-btn" onclick="executeScan()">REFRESH TELEMETRY</button>
     </div>
 
