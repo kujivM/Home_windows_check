@@ -74,7 +74,7 @@ def get_system_status():
 
     # topコマンドの実行（上位20行だけ取得してターミナル感を出す）
     try:
-        top_raw = subprocess.check_output(['top', '-n', '1'], text=True, timeout=3)
+        top_raw = subprocess.check_output(['top', '-b', '-n', '1'], text=True, timeout=2)
         top_text = "\n".join(top_raw.split("\n")[:20])
     except Exception as e:
         top_text = f"TERMINAL UPLINK ERROR:\n{e}"
