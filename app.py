@@ -39,6 +39,16 @@ def fetch_device_status(device_id):
     except: pass
     return None
 
+# ==========================================
+# ★MacroDroidからの外出検知を受け取るスイッチ
+# ==========================================
+@app.route('/api/outdoor_check')
+def outdoor_check():
+    # 以前作成した窓チェック＆LINE通知プログラムを裏で実行する
+    subprocess.Popen(['python3', 'check_windows.py'])
+    return "CHECK INITIATED", 200
+
+
 # --- ★メイン画面（1ページ目） ---
 @app.route('/')
 def index():
