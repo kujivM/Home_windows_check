@@ -129,6 +129,12 @@
         <div class="terminal-box">
             <div class="terminal-text" id="top-output">AWAITING SYSTEM DATA...</div>
         </div>
+
+        <!-- ★ここから追加：ネットワークポート出力 -->
+        <div class="matrix-title" style="margin-top:10px;">NETWORK & UPLINK MATRIX (LISTENING PORTS)</div>
+        <div class="terminal-box" style="height: 120px; flex-grow: 0;">
+            <div class="terminal-text" id="net-output">AWAITING NETWORK DATA...</div>
+        </div>
     </div>
 
     <div class="controls">
@@ -151,8 +157,12 @@
                 // ターミナルにtopコマンドの結果を流し込む
                 document.getElementById('top-output').innerText = data.top_text;
 
+                // ★この1行を追加：ネットワーク情報を流し込む
+                document.getElementById('net-output').innerText = data.net_text;
+
             } catch(e) {
                 document.getElementById('top-output').innerText = "ERROR: UNABLE TO REACH KERNEL.";
+                document.getElementById('net-output').innerText = "ERROR: UPLINK FAILED."; // ★エラー時の処理も追加
             } finally {
                 btn.innerText = "RUN DIAGNOSTICS";
             }

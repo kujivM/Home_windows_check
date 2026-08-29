@@ -76,7 +76,7 @@ def manifest():
 def get_system_status():
     # ディスク容量取得
     try:
-        disk = shutil.disk_usage('/data/data/com.termux/files/home')
+        disk = subprocess.run(['df', '-h', '/'], capture_output=True, text=True)
         disk_total = round(disk.total / (1024 ** 3), 1)
         disk_used = round((disk.total - disk.free) / (1024 ** 3), 1)
         disk_percent = round(((disk.total - disk.free) / disk.total) * 100, 1)
@@ -85,12 +85,34 @@ def get_system_status():
 
     # topコマンドの実行（上位20行だけ取得してターミナル感を出す）
     try:
-        top_raw = subprocess.check_output(['top', '-b', '-n', '1'], text=True, timeout=2)
-        top_text = "\n".join(top_raw.split("\n")[:20])
+        top_result = subprocess.run(['top', '-b', '-n', '1', '-w', '120'], capture_output=True, text=True, timeout=2)
+        top_text = top_result.stdout
+        if len(top_text.splitlines()) > 20:
+            top_text = "\n".join(top_text.splitlines()[:20])
     except Exception as e:
-        top_text = f"TERMINAL UPLINK ERROR:\n{e}"
+        top_text = f"SYSTEM MONITORING ERROR: {str(e)}"
+    # ==========================================
+    # ★ここから追加：ネットワーク（待ち受けポート）情報の取得
+    # ==========================================
+    try:
+        # nmapコマンドで自分自身をスキャンし、ポート情報を取得する
+        net_result = subprocess.run(['nmap', 'localhost'], capture_output=True, text=True, timeout=5)
+        net_text = net_result.stdout
+        if not net_text:
+            net_text = "NO NETWORK SOCKETS FOUND."
+    except Exception as e:
+        net_text = f"NETWORK UPLINK ERROR: {str(e)}"
+    # ==========================================
 
-    return jsonify({"disk_total": disk_total, "disk_used": disk_used, "disk_percent": disk_percent, "top_text": top_text})
+    response_data = {
+        "disk_used": disk_used,       
+        "disk_total": disk_total,     
+        "disk_percent": disk_percent, 
+        "top_text": top_text,         
+        "net_text": net_text          # ★この1行を追加してデータを送る
+    }
+
+    return jsonify(response_data)
 
 # --- メイン画面用API ---
 @app.route('/api/status')
