@@ -135,7 +135,7 @@ def get_status():
 @app.route('/api/weather')
 def get_weather():
     # 取得した32桁のAPIキーをここに貼り付けます
-    api_key = "ここに取得したAPIキーを貼り付けてください"
+    api_key = "215efee5cc5746cfdbdd262465a9b90e"
     
     # 金沢区周辺（横浜）を指定し、摂氏（℃）でデータを要求
     city = "Yokohama,jp"
