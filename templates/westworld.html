@@ -161,6 +161,52 @@
         .node-box.alert .biometric-status { background: rgba(255, 51, 85, 0.15); border-top: 1px dashed var(--delos-alert); color: var(--delos-alert); }
 
         /* ==========================================
+           外界テレメトリーバーのスタイル
+           ========================================== */
+        .external-telemetry-bar {
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--delos-cyan-dim);
+            border-left: 3px solid var(--delos-cyan);
+            padding: 8px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Share Tech Mono', monospace;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .telemetry-tag {
+            font-size: 0.75rem;
+            color: var(--delos-cyan);
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .telemetry-items {
+            display: flex;
+            gap: 20px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .tel-item {
+            display: flex;
+            gap: 5px;
+        }
+
+        .tel-label {
+            color: var(--delos-grey);
+        }
+
+        .tel-val {
+            color: #ffffff;
+            font-weight: bold;
+            text-shadow: 0 0 5px var(--delos-cyan-dim);
+        }
+
+        /* ==========================================
            ボタン領域（絶対に下部に固定される）
            ========================================== */
         .controls { 
@@ -508,6 +554,10 @@
                 btn.disabled = false; btn.innerText = "REFRESH TELEMETRY";
             }
         }
+
+        // ==========================================
+        // ★外界の気象データを自動更新する処理
+        // ==========================================
         function updateWeather() {
             fetch('/api/weather')
                 .then(response => response.json())
@@ -522,6 +572,7 @@
                 })
                 .catch(error => console.error('Error fetching weather:', error));
         }
+        
         // ページを開いた時に即実行し、その後は10分(600000ミリ秒)ごとに自動更新
         updateWeather();
         setInterval(updateWeather, 600000);
