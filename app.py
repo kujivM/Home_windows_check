@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify
+import requests
 import time
 import hashlib
 import hmac
@@ -127,6 +128,34 @@ def get_status():
     if l_lgt: response_data["living"]["living_light"] = l_lgt.get("power", "ON")
 
     return jsonify(response_data)
+
+# ==========================================
+# ★外界の気象データを取得するAPI
+# ==========================================
+@app.route('/api/weather')
+def get_weather():
+    # 取得した32桁のAPIキーをここに貼り付けます
+    api_key = "ここに取得したAPIキーを貼り付けてください"
+    
+    # 金沢区周辺（横浜）を指定し、摂氏（℃）でデータを要求
+    city = "Yokohama,jp"
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+    
+    try:
+        response = requests.get(url, timeout=5)
+        data = response.json()
+        
+        # 画面表示用にSFっぽくデータを整理
+        weather_info = {
+            "temp": round(data["main"]["temp"], 1),
+            "humidity": data["main"]["humidity"],
+            "pressure": data["main"]["pressure"],
+            "wind_speed": data["wind"]["speed"],
+            "status": data["weather"][0]["main"].upper() # CLEARやCLOUDSなど大文字で出力
+        }
+        return jsonify(weather_info)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
