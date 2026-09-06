@@ -2,12 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#090e11">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DELOS SYSTEM - FULL FACILITY MATRIX</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
@@ -22,33 +17,51 @@
 
         * { box-sizing: border-box; }
 
-        html { background-color: var(--delos-bg); height: 100%; }
+        html {
+            background-color: var(--delos-bg);
+            height: 100%;
+        }
 
         body {
-            background-color: var(--delos-bg); color: var(--delos-cyan);
-            font-family: 'Rajdhani', sans-serif; margin: 0; padding: 10px 15px;
-            display: flex; flex-direction: column; height: 100%; overflow: hidden;
+            background-color: var(--delos-bg);
+            color: var(--delos-cyan);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            height: 100%; 
+            overflow: hidden;
             text-transform: uppercase;
-            background-image: linear-gradient(rgba(77, 248, 255, 0.03) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(77, 248, 255, 0.03) 1px, transparent 1px);
+            background-image: 
+                linear-gradient(rgba(77, 248, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(77, 248, 255, 0.03) 1px, transparent 1px);
             background-size: 20px 20px;
         }
 
         .header {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--delos-cyan-dim); padding-bottom: 8px; margin-bottom: 10px; flex-shrink: 0;
+            border-bottom: 1px solid var(--delos-cyan-dim);
+            padding-bottom: 8px; margin-bottom: 10px; flex-shrink: 0;
         }
+
         .host-profile { display: flex; align-items: center; gap: 12px; }
+
         .host-circle {
-            width: 50px; height: 50px; border: 2px solid var(--delos-cyan); border-radius: 50%;
-            display: flex; justify-content: center; align-items: center; font-size: 0.45rem; text-align: center;
-            box-shadow: 0 0 10px var(--delos-cyan-dim); position: relative; flex-shrink: 0;
+            width: 50px; height: 50px; border: 2px solid var(--delos-cyan);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 0.45rem; text-align: center; box-shadow: 0 0 10px var(--delos-cyan-dim);
+            position: relative; flex-shrink: 0;
         }
+        
         .host-circle::before {
             content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px;
-            border: 1px dashed var(--delos-grey); border-radius: 50%; animation: rotate 20s linear infinite;
+            border: 1px dashed var(--delos-grey); border-radius: 50%;
+            animation: rotate 20s linear infinite;
         }
+
         @keyframes rotate { 100% { transform: rotate(360deg); } }
+
         .system-info { font-size: 0.55rem; color: var(--delos-grey); font-family: 'Share Tech Mono', monospace; line-height: 1.3; }
 
         .sync-container {
@@ -56,6 +69,7 @@
             border: 1px solid #333; border-radius: 40px; padding: 4px 15px 4px 4px;
             opacity: 0; visibility: hidden; transition: opacity 0.3s ease;
         }
+
         .sync-container.active { opacity: 1; visibility: visible; }
         .sync-circle { position: relative; width: 40px; height: 40px; }
         .sync-circle svg { transform: rotate(-90deg); width: 100%; height: 100%; }
@@ -70,10 +84,76 @@
         .sync-title { font-size: 0.8rem; color: #fff; letter-spacing: 1px; }
         .sync-sub { font-size: 0.5rem; color: var(--delos-grey); }
 
+        /* ==========================================
+           ★新規追加：バイタル（生体データ）バー
+           ========================================== */
+        .vitals-bar {
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--delos-cyan-dim);
+            border-left: 3px solid #fff;
+            padding: 8px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .vitals-items {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .vital-box {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .vital-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.55rem;
+            color: var(--delos-grey);
+            margin-bottom: 2px;
+            letter-spacing: 1px;
+        }
+
+        .vital-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: baseline;
+            gap: 3px;
+        }
+        
+        .vital-unit {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--delos-grey);
+            font-weight: normal;
+            text-shadow: none;
+        }
+
+        /* ==========================================
+           外界テレメトリーバーのスタイル
+           ========================================== */
         .external-telemetry-bar {
-            background-color: rgba(0, 0, 0, 0.4); border: 1px solid var(--delos-cyan-dim); border-left: 3px solid var(--delos-cyan);
-            padding: 8px 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;
-            font-family: 'Share Tech Mono', monospace; flex-wrap: wrap; gap: 10px; flex-shrink: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--delos-cyan-dim);
+            border-left: 3px solid var(--delos-cyan);
+            padding: 8px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Share Tech Mono', monospace;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .telemetry-tag { font-size: 0.75rem; color: var(--delos-cyan); letter-spacing: 1px; font-weight: bold; }
         .telemetry-items { display: flex; gap: 20px; font-size: 0.8rem; flex-wrap: wrap; }
@@ -82,8 +162,9 @@
         .tel-val { color: #ffffff; font-weight: bold; text-shadow: 0 0 5px var(--delos-cyan-dim); }
 
         .matrix-title {
-            color: var(--delos-grey); font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 10px;
-            display: flex; align-items: center; gap: 10px; font-family: 'Share Tech Mono', monospace; flex-shrink: 0;
+            color: var(--delos-grey); font-size: 0.7rem; letter-spacing: 2px;
+            margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
+            font-family: 'Share Tech Mono', monospace; flex-shrink: 0;
         }
         .matrix-title::before { content: '◆'; color: var(--delos-cyan); }
 
@@ -98,8 +179,12 @@
             padding: 10px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
             position: relative; display: flex; flex-direction: column; gap: 6px;
         }
+
         .node-box.active { box-shadow: inset 0 0 10px var(--delos-cyan-dim); }
-        .node-box.alert { border-color: var(--delos-alert); background-color: rgba(255, 51, 85, 0.05); box-shadow: inset 0 0 15px rgba(255, 51, 85, 0.2); }
+        .node-box.alert {
+            border-color: var(--delos-alert); background-color: rgba(255, 51, 85, 0.05);
+            box-shadow: inset 0 0 15px rgba(255, 51, 85, 0.2);
+        }
 
         .node-header { font-family: 'Share Tech Mono', monospace; font-size: 0.5rem; color: var(--delos-grey); border-bottom: 1px solid #222; padding-bottom: 2px; }
         .node-title { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; color: var(--delos-cyan); margin-bottom: 2px; }
@@ -116,57 +201,57 @@
         .meter-text { display: flex; justify-content: space-between; font-size: 0.55rem; color: var(--delos-cyan); }
         .meter-bg { width: 100%; height: 3px; background-color: rgba(77, 248, 255, 0.1); border: 1px solid rgba(77, 248, 255, 0.2); }
         .meter-fill { height: 100%; background-color: var(--delos-cyan); box-shadow: 0 0 5px var(--delos-cyan); transition: width 0.5s ease; }
+        
         .meter-fill.warning { background-color: var(--delos-alert); box-shadow: 0 0 5px var(--delos-alert); }
         .meter-text.warning-text { color: var(--delos-alert); }
         
         .val-alert { color: var(--delos-alert); animation: pulse 1.5s infinite; }
         .val-offline { color: var(--delos-offline); }
         .val-clear { color: var(--delos-cyan); }
+
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         .biometric-status {
             margin-top: auto; padding: 4px; text-align: center; font-size: 0.75rem;
-            font-weight: 600; letter-spacing: 2px; background: var(--delos-cyan-dim); border-top: 1px dashed var(--delos-cyan); transition: all 0.3s ease;
+            font-weight: 600; letter-spacing: 2px; background: var(--delos-cyan-dim);
+            border-top: 1px dashed var(--delos-cyan); transition: all 0.3s ease;
         }
+
         .node-box.alert .biometric-status { background: rgba(255, 51, 85, 0.15); border-top: 1px dashed var(--delos-alert); color: var(--delos-alert); }
 
-        /* ==========================================
-           ★システムログのスタイル（追加）
-           ========================================== */
-        .log-box {
-            background-color: #05080a; border: 1px solid var(--delos-cyan-dim); border-left: 3px solid var(--delos-cyan);
-            height: 90px; overflow-y: auto; padding: 8px; font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
-            margin-bottom: 5px; flex-shrink: 0; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
-            scrollbar-width: thin; scrollbar-color: var(--delos-cyan) #05080a;
-        }
-        .log-entry { color: #33ff33; margin-bottom: 4px; line-height: 1.2; text-shadow: 0 0 2px rgba(51, 255, 51, 0.5); }
-        .log-time { color: var(--delos-grey); margin-right: 8px; }
-        .log-warn { color: var(--delos-alert); text-shadow: 0 0 2px rgba(255, 51, 85, 0.5); }
-
         .controls { 
-            margin-top: 5px; border-top: 1px solid var(--delos-cyan-dim); padding-top: 10px; padding-bottom: 25px; 
-            display: flex; justify-content: flex-end; flex-shrink: 0; background-color: var(--delos-bg); z-index: 10;
+            margin-top: 10px; border-top: 1px solid var(--delos-cyan-dim); 
+            padding-top: 10px; padding-bottom: 25px; display: flex; 
+            justify-content: flex-end; flex-shrink: 0; background-color: var(--delos-bg); z-index: 10;
         }
         button {
             background: transparent; color: var(--delos-cyan); border: 1px solid var(--delos-cyan);
             padding: 8px 25px; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 1rem;
-            letter-spacing: 2px; cursor: pointer; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); transition: all 0.2s; outline: none;
+            letter-spacing: 2px; cursor: pointer; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+            transition: all 0.2s; outline: none;
         }
         button:active { background: var(--delos-cyan); color: var(--delos-bg); }
         button:disabled { color: var(--delos-grey); border-color: var(--delos-grey); }
 
+        /* スマホ縦向き */
         @media (orientation: portrait) {
             .facility-grid { grid-template-columns: 1fr; gap: 8px; }
             .node-box { padding: 8px; gap: 4px; }
             .node-title { font-size: 1.1rem; }
             .sensor-data { gap: 4px; }
             .data-item { padding: 3px 5px; }
+            .vital-value { font-size: 1.5rem; }
         }
+
+        /* スマホ横向き */
         @media (orientation: landscape) {
             body { padding: 8px 15px; }
             .header { margin-bottom: 5px; padding-bottom: 5px; }
             .host-circle { width: 35px; height: 35px; font-size: 0.4rem; }
             .system-info { font-size: 0.5rem; }
+            .vitals-bar { flex-direction: row; align-items: center; padding: 4px 15px; margin-bottom: 8px; }
+            .vitals-items { gap: 30px; }
+            .vital-value { font-size: 1.3rem; }
             .matrix-title { margin-bottom: 5px; font-size: 0.65rem; }
             .facility-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
             .node-box { padding: 8px; gap: 4px; }
@@ -177,7 +262,6 @@
             .env-meters { gap: 3px; }
             .meter-text { font-size: 0.5rem; }
             .biometric-status { padding: 3px; font-size: 0.65rem; }
-            .log-box { height: 70px; } /* 横画面時は少し低く */
             .controls { margin-top: 5px; padding-top: 5px; }
             button { padding: 6px 15px; font-size: 0.8rem; }
         }
@@ -190,7 +274,7 @@
             <div class="host-circle">AUTH<br>USER</div>
             <div class="system-info">
                 FACILITY: YOKOHAMA RESIDENCE<br>
-                DATE: <span id="current-date">--</span><br>
+                DATE: <span id="current-date">2026.08.13</span><br>
                 SYSTEM STATUS: <span style="color:var(--delos-cyan);">ONLINE</span><br>
                 UPLINK: SWITCHBOT API V1.1
             </div>
@@ -211,6 +295,34 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- ★ホスト生体データ（バイタル）バー -->
+    <!-- ========================================== -->
+    <div class="vitals-bar">
+        <div class="telemetry-tag" style="color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.4);">▶ HOST BIOMETRICS [ID: AC5000]</div>
+        <div class="vitals-items">
+            <div class="vital-box">
+                <span class="vital-label">HEART RATE</span>
+                <span class="vital-value"><span id="vital-hr-val">68</span> <span class="vital-unit">BPM</span></span>
+            </div>
+            <div class="vital-box">
+                <span class="vital-label">SpO2 (OXYGEN)</span>
+                <span class="vital-value"><span id="vital-spo2-val">98</span> <span class="vital-unit">%</span></span>
+            </div>
+            <div class="vital-box">
+                <span class="vital-label">RESPIRATION</span>
+                <span class="vital-value"><span id="vital-rr-val">14</span> <span class="vital-unit">/MIN</span></span>
+            </div>
+            <div class="vital-box">
+                <span class="vital-label">RECOVERY SCORE</span>
+                <span class="vital-value" style="color: var(--delos-cyan); text-shadow: 0 0 8px var(--delos-cyan-dim);"><span id="vital-score-val">85</span> <span class="vital-unit">PTS</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 外界気象テレメトリーバー -->
+    <!-- ========================================== -->
     <div class="external-telemetry-bar">
         <div class="telemetry-tag">▶ EXTERNAL TELEMETRY [YOKOHAMA KANAZAWA]</div>
         <div class="telemetry-items">
@@ -328,12 +440,6 @@
         </div>
     </div>
 
-    <!-- ★追加：システムログの表示枠 -->
-    <div class="matrix-title" style="margin-top: 10px;">SYSTEM EVENT LOG</div>
-    <div class="log-box" id="system-log">
-        <!-- ここにログが自動で追加されます -->
-    </div>
-
     <div class="controls">
         <button onclick="location.href='/system'" style="margin-right:auto; border-color:var(--delos-grey); color:var(--delos-grey);">CORE DIAGNOSTICS</button>
         <button id="scan-btn" onclick="executeScan()">REFRESH TELEMETRY</button>
@@ -342,25 +448,6 @@
     <script>
         const today = new Date();
         document.getElementById('current-date').innerText = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
-
-        // ★追加：システムログに文字を追記する関数
-        function addLog(message, isWarning = false) {
-            const logBox = document.getElementById('system-log');
-            const now = new Date();
-            const timeStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-            
-            const entry = document.createElement('div');
-            entry.className = isWarning ? 'log-entry log-warn' : 'log-entry';
-            entry.innerHTML = `<span class="log-time">[${timeStr}]</span> ${message}`;
-            
-            logBox.appendChild(entry);
-            logBox.scrollTop = logBox.scrollHeight; // 自動で一番下までスクロール
-        }
-
-        // ページ読み込み時に最初のログを流す
-        window.onload = function() {
-            addLog("SYSTEM ONLINE. UPLINK ESTABLISHED.");
-        };
 
         function updateEnv(sector, temp, hum) {
             const valTemp = document.getElementById(`val-temp-${sector}`);
@@ -371,46 +458,64 @@
             const textHum = document.getElementById(`text-hum-${sector}`);
 
             if (temp === "RESTRICTED") {
-                valTemp.innerText = "NO SIGNAL"; valTemp.className = "data-value val-alert"; textTemp.classList.add('warning-text');
-                barTemp.style.width = "100%"; barTemp.className = "meter-fill warning";
+                valTemp.innerText = "NO SIGNAL"; valTemp.className = "data-value val-alert";
+                textTemp.classList.add('warning-text'); barTemp.style.width = "100%"; barTemp.className = "meter-fill warning";
             } else if (temp !== "--" && temp !== undefined) {
-                valTemp.innerText = `${temp}°C`; valTemp.className = "data-value val-clear"; textTemp.classList.remove('warning-text');
-                let width = Math.min((parseFloat(temp) / 40) * 100, 100); barTemp.style.width = `${width}%`; barTemp.className = "meter-fill";
-                if (parseFloat(temp) >= 30.0) { barTemp.classList.add('warning'); textTemp.classList.add('warning-text'); valTemp.classList.replace('val-clear', 'val-alert'); }
+                valTemp.innerText = `${temp}°C`; valTemp.className = "data-value val-clear";
+                textTemp.classList.remove('warning-text');
+                let width = Math.min((parseFloat(temp) / 40) * 100, 100);
+                barTemp.style.width = `${width}%`; barTemp.className = "meter-fill";
+                if (parseFloat(temp) >= 30.0) {
+                    barTemp.classList.add('warning'); textTemp.classList.add('warning-text'); valTemp.classList.replace('val-clear', 'val-alert');
+                }
             }
 
             if (hum === "RESTRICTED") {
-                valHum.innerText = "NO SIGNAL"; valHum.className = "data-value val-alert"; textHum.classList.add('warning-text');
-                barHum.style.width = "100%"; barHum.className = "meter-fill warning";
+                valHum.innerText = "NO SIGNAL"; valHum.className = "data-value val-alert";
+                textHum.classList.add('warning-text'); barHum.style.width = "100%"; barHum.className = "meter-fill warning";
             } else if (hum !== "--" && hum !== undefined) {
-                valHum.innerText = `${hum}%`; valHum.className = "data-value val-clear"; textHum.classList.remove('warning-text');
-                barHum.style.width = `${hum}%`; barHum.className = "meter-fill";
+                valHum.innerText = `${hum}%`; valHum.className = "data-value val-clear";
+                textHum.classList.remove('warning-text'); barHum.style.width = `${hum}%`; barHum.className = "meter-fill";
             }
         }
 
         function updateWindow(elementId, state) {
             const el = document.getElementById(elementId);
             el.className = "data-value";
-            if (state === "close" || state === "closed") { el.innerText = "SECURE"; el.classList.add('val-clear'); }
-            else if (state === "open" || state === "opened" || state === "timeOutNotClose") { el.innerText = "BREACHED"; el.classList.add('val-alert'); }
-            else { el.innerText = "OFFLINE"; el.classList.add('val-offline'); }
+            if (state === "close" || state === "closed") {
+                el.innerText = "SECURE"; el.classList.add('val-clear');
+            } else if (state === "open" || state === "opened" || state === "timeOutNotClose") {
+                el.innerText = "BREACHED"; el.classList.add('val-alert');
+            } else {
+                el.innerText = "OFFLINE"; el.classList.add('val-offline');
+            }
         }
 
         function updateLight(elementId, powerState) {
             const el = document.getElementById(elementId);
             el.className = "data-value";
-            if (powerState === "on" || powerState === "ON") { el.innerText = "ONLINE (ON)"; el.classList.add('val-clear'); }
-            else if (powerState === "off" || powerState === "OFF") { el.innerText = "ONLINE (OFF)"; el.classList.add('val-clear'); }
-            else { el.innerText = "OFFLINE"; el.classList.add('val-offline'); }
+            if (powerState === "on" || powerState === "ON") {
+                el.innerText = "ONLINE (ON)"; el.classList.add('val-clear');
+            } else if (powerState === "off" || powerState === "OFF") {
+                el.innerText = "ONLINE (OFF)"; el.classList.add('val-clear');
+            } else {
+                el.innerText = "OFFLINE"; el.classList.add('val-offline');
+            }
         }
 
         function updatePresence(sector, isPresent) {
             const box = document.getElementById(`node-${sector}`);
             const bio = document.getElementById(`bio-${sector}`);
             if (isPresent) {
-                box.classList.add('alert'); bio.innerText = "BIOMETRIC: HOST DETECTED"; bio.style.color = "var(--delos-alert)"; bio.style.borderColor = "var(--delos-alert)";
+                box.classList.add('alert');
+                bio.innerText = "BIOMETRIC: HOST DETECTED";
+                bio.style.color = "var(--delos-alert)";
+                bio.style.borderColor = "var(--delos-alert)";
             } else {
-                box.classList.remove('alert'); bio.innerText = "BIOMETRIC: CLEAR"; bio.style.color = "var(--delos-grey)"; bio.style.borderColor = "#333";
+                box.classList.remove('alert');
+                bio.innerText = "BIOMETRIC: CLEAR";
+                bio.style.color = "var(--delos-grey)";
+                bio.style.borderColor = "#333";
             }
         }
 
@@ -421,8 +526,6 @@
             const syncPercent = document.getElementById('sync-percent');
             
             btn.disabled = true; btn.innerText = "INITIALIZING...";
-            addLog("INITIATING FACILITY TELEMETRY SCAN..."); // ★ログ追加
-
             const nodes = ['study', 'bed', 'living'];
             nodes.forEach(id => { document.getElementById(`node-${id}`).style.opacity = '0.4'; });
 
@@ -454,24 +557,11 @@
                 updateWindow('val-win-living-f', data.living.window_front);
                 updateWindow('val-win-living-b', data.living.window_back);
                 updatePresence('living', data.living.presence);
-
                 updateLight('val-dining-lgt', data.living.dining_light);
                 updateLight('val-living-lgt', data.living.living_light);
-                
-                addLog("SCAN COMPLETE. TELEMETRY UPDATED."); // ★ログ追加
-
-                // ★センサー状態から異常を検知して警告ログを追加
-                if (data.study.window === "open" || data.study.window === "timeOutNotClose") addLog("WARNING: SECTOR 01 WINDOW BREACHED.", true);
-                if (data.bed.window === "open" || data.bed.window === "timeOutNotClose") addLog("WARNING: SECTOR 02 WINDOW BREACHED.", true);
-                if (data.bed.presence) addLog("ALERT: BIOMETRIC DETECTED IN SECTOR 02.", true);
-                if (data.living.window_front === "open" || data.living.window_front === "timeOutNotClose") addLog("WARNING: SECTOR 03 FRONT WINDOW BREACHED.", true);
-                if (data.living.window_back === "open" || data.living.window_back === "timeOutNotClose") addLog("WARNING: SECTOR 03 BACK WINDOW BREACHED.", true);
-                if (data.living.presence) addLog("ALERT: BIOMETRIC DETECTED IN SECTOR 03.", true);
-
             } catch (error) {
                 console.error("API ERROR:", error);
                 alert("SYSTEM ERROR: UPLINK FAILED");
-                addLog("SYSTEM ERROR: UPLINK FAILED.", true); // ★ログ追加
             } finally {
                 syncUi.classList.remove('active');
                 nodes.forEach(id => { document.getElementById(`node-${id}`).style.opacity = '1'; });
@@ -481,6 +571,9 @@
             }
         }
 
+        // ==========================================
+        // ★外界の気象データを自動更新する処理
+        // ==========================================
         function updateWeather() {
             fetch('/api/weather')
                 .then(response => response.json())
@@ -495,10 +588,27 @@
                 })
                 .catch(error => console.error('Error fetching weather:', error));
         }
-        
         updateWeather();
         setInterval(updateWeather, 600000);
 
+        // ==========================================
+        // ★バイタルデータのダミー変動アニメーション
+        // ==========================================
+        function simulateVitals() {
+            // HR: 65 ~ 75
+            const hr = Math.floor(Math.random() * 11) + 65;
+            // SpO2: 96 ~ 99
+            const spo2 = Math.floor(Math.random() * 4) + 96;
+            // RR: 13 ~ 16
+            const rr = Math.floor(Math.random() * 4) + 13;
+            
+            document.getElementById('vital-hr-val').innerText = hr;
+            document.getElementById('vital-spo2-val').innerText = spo2;
+            document.getElementById('vital-rr-val').innerText = rr;
+        }
+        // 3秒ごとにバイタルの数値を少しだけ変動させる
+        setInterval(simulateVitals, 3000);
+        
     </script>
 </body>
 </html>
