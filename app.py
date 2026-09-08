@@ -9,9 +9,15 @@ import requests
 import subprocess
 import shutil
 import config
+import google.generativeai as genai
+from flask import request
+
 
 app = Flask(__name__)
-
+# Gemini APIの初期設定
+genai.configure(api_key=config.GEMINI_API_KEY)
+# 高速で優秀な最新モデルを指定
+model = genai.GenerativeModel('gemini-1.5-flash')
 # ==========================================
 # === デバイスID設定エリア ===
 # ==========================================
@@ -178,6 +184,33 @@ def get_weather():
         return jsonify(weather_info)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/chat', methods=['POST'])
+def chat_with_gemini():
+    """ｽﾀｯｸﾁｬﾝからのテキストを受け取り、Geminiの回答を返すAPI"""
+    data = request.json
+    user_text = data.get("text", "")
+    
+    if not user_text:
+        return jsonify({"reply": "よく聞こえませんでした。"})
+
+    try:
+        # Geminiに渡す指示書（プロンプト）
+        prompt = f"""
+        あなたはスマートホーム「DELOSシステム」の可愛いAIアシスタント「ｽﾀｯｸﾁｬﾝ」です。
+        以下のユーザーの発言に対して、親しみやすい口調で、1〜2文程度の短い返答を生成してください。
+        ユーザーの発言: {user_text}
+        """
+        # Geminiに考えてもらう
+        response = model.generate_content(prompt)
+        reply_text = response.text.strip()
+        
+    except Exception as e:
+        print(f"Gemini API Error: {e}")
+        reply_text = "ごめんなさい、頭脳にアクセスできませんでした。"
+        
+    # 返答をJSONで返す
+    return jsonify({"reply": reply_text})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
