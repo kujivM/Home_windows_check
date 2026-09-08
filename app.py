@@ -9,15 +9,14 @@ import requests
 import subprocess
 import shutil
 import config
-import google.generativeai as genai
+from google import genai
 from flask import request
 
 
 app = Flask(__name__)
 # Gemini APIの初期設定
-genai.configure(api_key=config.GEMINI_API_KEY)
-# 高速で優秀な最新モデルを指定
-model = genai.GenerativeModel('gemini-1.5-flash')
+client = genai.Client(api_key=config.GEMINI_API_KEY)
+
 # ==========================================
 # === デバイスID設定エリア ===
 # ==========================================
@@ -185,6 +184,9 @@ def get_weather():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ==========================================
+# ★Gemini API
+# ==========================================
 @app.route('/api/chat', methods=['POST'])
 def chat_with_gemini():
     """ｽﾀｯｸﾁｬﾝからのテキストを受け取り、Geminiの回答を返すAPI"""
@@ -202,9 +204,12 @@ def chat_with_gemini():
         ユーザーの発言: {user_text}
         """
         # Geminiに考えてもらう
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=prompt
+        )
         reply_text = response.text.strip()
-        
+    
     except Exception as e:
         print(f"Gemini API Error: {e}")
         reply_text = "ごめんなさい、頭脳にアクセスできませんでした。"
