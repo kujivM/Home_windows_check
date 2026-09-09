@@ -222,7 +222,8 @@ def chat_with_gemini():
     
     except Exception as e:
         print(f"Gemini API Error: {e}")
-        reply_text = "ごめんなさい、頭脳にアクセスできませんでした。"
+#        reply_text = "ごめんなさい、頭脳にアクセスできませんでした。"
+        reply_text = f"Gemini Error: {type(e).__name__} - {str(e)}"
         
     # 返答をJSONで返す
     return jsonify({"reply": reply_text})
