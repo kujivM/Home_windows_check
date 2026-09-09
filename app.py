@@ -209,6 +209,16 @@ def chat_with_gemini():
         contents=prompt
         )
         reply_text = response.text.strip()
+
+        # ▼ここから追加：ｽﾀｯｸﾁｬﾝに音声を喋らせる
+        try:
+            import urllib.parse
+            encoded_text = urllib.parse.quote(reply_text)
+            # ファームウェアのバージョン違いを吸収するため、textとsayの両パラメータを送信
+            url = f"http://192.168.3.4/speech?text={encoded_text}&say={encoded_text}"
+            requests.get(url, timeout=5)
+        except Exception as e:
+            print(f"StackChan API Error: {e}")
     
     except Exception as e:
         print(f"Gemini API Error: {e}")
