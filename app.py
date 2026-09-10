@@ -189,15 +189,38 @@ def get_weather():
 # ==========================================
 
 def get_home_status(room_name: str) -> str:
-    """指定された部屋（書斎、寝室、居間）の環境（温度・湿度など）を返します。"""
-    # ★まずはテストとしてダミーの値を返します（後で本物のSwitchBotデータに繋ぎます！）
+    """指定された部屋（書斎、寝室、居間）のリアルタイムな環境をSwitchBotから取得して返します。"""
+    
+    # ※ app.py 内にすでに存在する fetch_device_status と DEVICE_IDS を利用します
     if "書斎" in room_name:
-        return "温度27度、湿度50%。窓は閉まっています。"
+        env = fetch_device_status(DEVICE_IDS.get("study_meter", "E50F34EC2ECF"))
+        win = fetch_device_status(DEVICE_IDS.get("study_window", "B0E9FEE6C7BA"))
+        
+        temp = env.get("temperature", "不明") if env else "不明"
+        hum = env.get("humidity", "不明") if env else "不明"
+        win_state = "開いています" if win and win.get("openState") in ["open", "opened"] else "閉まっています"
+        
+        return f"現在の書斎は、温度{temp}度、湿度{hum}パーセントです。窓は{win_state}。"
+
     elif "寝室" in room_name:
-        return "温度25度、湿度45%。誰もいません。"
+        env = fetch_device_status(DEVICE_IDS.get("bed_hub", "")) # ※ハブ本体の温湿度
+        pre = fetch_device_status(DEVICE_IDS.get("bed_presence", "B0E9FEB96D56"))
+        
+        temp = env.get("temperature", "不明") if env else "不明"
+        presence = "誰かいます" if pre and (pre.get('presenceState') == 'presence' or pre.get('moveDetected') == True) else "誰もいません"
+        
+        return f"寝室は温度{temp}度で、今は{presence}。"
+
     elif "居間" in room_name:
-        return "温度28度、湿度55%。誰かいます！"
-    return "その部屋の情報はありません。"
+        env = fetch_device_status(DEVICE_IDS.get("living_hub", ""))
+        pre = fetch_device_status(DEVICE_IDS.get("living_presence", "B0E9FED6E43E"))
+        
+        temp = env.get("temperature", "不明") if env else "不明"
+        presence = "人がいます" if pre and (pre.get('presenceState') == 'presence' or pre.get('moveDetected') == True) else "誰もいません"
+        
+        return f"居間は温度{temp}度で、{presence}。"
+
+    return "その部屋のセンサーデータにはアクセスできませんでした。"
 
 @app.route('/api/chat', methods=['POST'])
 def chat_with_gemini():
