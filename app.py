@@ -187,6 +187,18 @@ def get_weather():
 # ==========================================
 # ★Gemini API
 # ==========================================
+
+def get_home_status(room_name: str) -> str:
+    """指定された部屋（書斎、寝室、居間）の環境（温度・湿度など）を返します。"""
+    # ★まずはテストとしてダミーの値を返します（後で本物のSwitchBotデータに繋ぎます！）
+    if "書斎" in room_name:
+        return "温度27度、湿度50%。窓は閉まっています。"
+    elif "寝室" in room_name:
+        return "温度25度、湿度45%。誰もいません。"
+    elif "居間" in room_name:
+        return "温度28度、湿度55%。誰かいます！"
+    return "その部屋の情報はありません。"
+
 @app.route('/api/chat', methods=['POST'])
 def chat_with_gemini():
     """ｽﾀｯｸﾁｬﾝからのテキストを受け取り、Geminiの回答を返すAPI"""
@@ -204,13 +216,17 @@ def chat_with_gemini():
         ユーザーの発言: {user_text}
         """
         # Geminiに考えてもらう
-        response = client.models.generate_content(
-        model='gemini-3.8-flash',
-        contents=prompt
+        # 道具（tools）を持たせてチャット形式で考えるように指示
+        chat = client.chats.create(
+            model='gemini-3.6-flash',
+            config=types.GenerateContentConfig(
+                tools=[get_home_status]
+            )
         )
+        response = chat.send_message(prompt)
         reply_text = response.text.strip()
 
-        # ▼ここから追加：ｽﾀｯｸﾁｬﾝに音声を喋らせる
+        # ｽﾀｯｸﾁｬﾝに音声を喋らせる
         try:
             import urllib.parse
             encoded_text = urllib.parse.quote(reply_text)
@@ -227,6 +243,8 @@ def chat_with_gemini():
         
     # 返答をJSONで返す
     return jsonify({"reply": reply_text})
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
