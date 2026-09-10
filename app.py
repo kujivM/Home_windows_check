@@ -205,7 +205,7 @@ def chat_with_gemini():
         """
         # Geminiに考えてもらう
         response = client.models.generate_content(
-        model='gemini-3.6-flash',
+        model='gemini-3.8-flash',
         contents=prompt
         )
         reply_text = response.text.strip()
