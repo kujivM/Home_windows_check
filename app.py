@@ -11,7 +11,7 @@ import shutil
 import config
 from google import genai
 from flask import request
-
+from google.genai import types
 
 app = Flask(__name__)
 # Gemini APIの初期設定
