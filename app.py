@@ -12,6 +12,9 @@ import config
 from google import genai
 from flask import request
 from google.genai import types
+from flask import send_file
+import generate_dashboard
+
 
 app = Flask(__name__)
 # Gemini APIの初期設定
@@ -267,7 +270,15 @@ def chat_with_gemini():
     # 返答をJSONで返す
     return jsonify({"reply": reply_text})
 
-
+    # ==========================================
+    # ★LILYGO 電子ペーパー連携API
+    # ==========================================
+    @app.route('/api/epaper.bin')
+    def get_epaper_bin():
+    """電子ペーパーに最新の生データ(bin)を生成して配信するAPI"""
+    generate_dashboard.generate_epaper_image()
+    # PNGではなく、電子ペーパーがそのまま読めるbinファイルを送信
+    return send_file('dashboard.bin', mimetype='application/octet-stream')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

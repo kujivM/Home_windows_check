@@ -75,5 +75,21 @@ def generate_epaper_image():
     image.save('dashboard.png')
     print("電子ペーパー用画像を生成しました: dashboard.png")
 
+    # --- ★追加：LILYGO T5-4.7専用の 4-bit 生データ(.bin) を作成 ---
+    raw_data = bytearray(width * height // 2)
+    pixels = image.load()
+    idx = 0
+    for y in range(height):
+        for x in range(0, width, 2):
+            # 2ピクセルを1バイトに圧縮（16階調グレースケール）
+            p1 = pixels[x, y] >> 4
+            p2 = pixels[x+1, y] >> 4
+            raw_data[idx] = (p1 << 4) | p2
+            idx += 1
+            
+    with open('dashboard.bin', 'wb') as f:
+        f.write(raw_data)
+    print("LILYGO用生データを生成しました: dashboard.bin")
+
 if __name__ == "__main__":
     generate_epaper_image()
