@@ -2,7 +2,14 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#090e11">
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <title>DELOS SYSTEM - FULL FACILITY MATRIX</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
@@ -42,7 +49,7 @@
         .header {
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--delos-cyan-dim);
-            padding-bottom: 8px; margin-bottom: 10px; flex-shrink: 0;
+            padding-bottom: 8px; margin-bottom: 8px; flex-shrink: 0;
         }
 
         .host-profile { display: flex; align-items: center; gap: 12px; }
@@ -84,93 +91,19 @@
         .sync-title { font-size: 0.8rem; color: #fff; letter-spacing: 1px; }
         .sync-sub { font-size: 0.5rem; color: var(--delos-grey); }
 
-        /* ==========================================
-           ★新規追加：バイタル（生体データ）バー
-           ========================================== */
-        .vitals-bar {
-            background-color: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--delos-cyan-dim);
-            border-left: 3px solid #fff;
-            padding: 8px 15px;
-            margin-bottom: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .vitals-items {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .vital-box {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .vital-label {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.55rem;
-            color: var(--delos-grey);
-            margin-bottom: 2px;
-            letter-spacing: 1px;
-        }
-
-        .vital-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #fff;
-            line-height: 1;
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
-            display: flex;
-            align-items: baseline;
-            gap: 3px;
-        }
-        
-        .vital-unit {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.6rem;
-            color: var(--delos-grey);
-            font-weight: normal;
-            text-shadow: none;
-        }
-
-        /* ==========================================
-           外界テレメトリーバーのスタイル
-           ========================================== */
-        .external-telemetry-bar {
-            background-color: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--delos-cyan-dim);
-            border-left: 3px solid var(--delos-cyan);
-            padding: 8px 15px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-family: 'Share Tech Mono', monospace;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .telemetry-tag { font-size: 0.75rem; color: var(--delos-cyan); letter-spacing: 1px; font-weight: bold; }
-        .telemetry-items { display: flex; gap: 20px; font-size: 0.8rem; flex-wrap: wrap; }
-        .tel-item { display: flex; gap: 5px; }
-        .tel-label { color: var(--delos-grey); }
-        .tel-val { color: #ffffff; font-weight: bold; text-shadow: 0 0 5px var(--delos-cyan-dim); }
-
         .matrix-title {
             color: var(--delos-grey); font-size: 0.7rem; letter-spacing: 2px;
-            margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
+            margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
             font-family: 'Share Tech Mono', monospace; flex-shrink: 0;
         }
         .matrix-title::before { content: '◆'; color: var(--delos-cyan); }
 
+        /* グリッド部分 */
         .facility-grid {
             display: grid; gap: 10px; flex-grow: 1; min-height: 0;
-            overflow-y: auto; padding-bottom: 5px; scrollbar-width: none;
+            overflow-y: auto; 
+            padding-bottom: 5px;
+            scrollbar-width: none; 
         }
         .facility-grid::-webkit-scrollbar { display: none; }
 
@@ -219,14 +152,60 @@
 
         .node-box.alert .biometric-status { background: rgba(255, 51, 85, 0.15); border-top: 1px dashed var(--delos-alert); color: var(--delos-alert); }
 
+        /* 外界テレメトリーバー */
+        .external-telemetry-bar {
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--delos-cyan-dim);
+            border-left: 3px solid var(--delos-cyan);
+            padding: 6px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Share Tech Mono', monospace;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .telemetry-tag { font-size: 0.7rem; color: var(--delos-cyan); letter-spacing: 1px; font-weight: bold; }
+        .telemetry-items { display: flex; gap: 15px; font-size: 0.75rem; flex-wrap: wrap; }
+        .tel-item { display: flex; gap: 4px; }
+        .tel-label { color: var(--delos-grey); }
+        .tel-val { color: #ffffff; font-weight: bold; text-shadow: 0 0 5px var(--delos-cyan-dim); }
+
+        /* ==========================================
+           ★ HOST BIOMETRICS (生体データ専用バー)
+           ========================================== */
+        .host-biometrics-bar {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-left: 3px solid #ffffff;
+            padding: 6px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Share Tech Mono', monospace;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .bio-tag { font-size: 0.7rem; color: #ffffff; letter-spacing: 1px; font-weight: bold; }
+        .bio-items { display: flex; gap: 15px; font-size: 0.75rem; flex-wrap: wrap; }
+        .bio-item { display: flex; gap: 4px; }
+        .bio-label { color: var(--delos-grey); }
+        .bio-val { color: #ffffff; font-weight: bold; text-shadow: 0 0 5px rgba(255, 255, 255, 0.4); }
+
+        /* ボタン領域 */
         .controls { 
-            margin-top: 10px; border-top: 1px solid var(--delos-cyan-dim); 
-            padding-top: 10px; padding-bottom: 25px; display: flex; 
-            justify-content: flex-end; flex-shrink: 0; background-color: var(--delos-bg); z-index: 10;
+            margin-top: 8px; border-top: 1px solid var(--delos-cyan-dim); 
+            padding-top: 8px; padding-bottom: 20px; 
+            display: flex; justify-content: flex-end; flex-shrink: 0; 
+            background-color: var(--delos-bg); z-index: 10;
         }
         button {
             background: transparent; color: var(--delos-cyan); border: 1px solid var(--delos-cyan);
-            padding: 8px 25px; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 1rem;
+            padding: 6px 20px; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.9rem;
             letter-spacing: 2px; cursor: pointer; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
             transition: all 0.2s; outline: none;
         }
@@ -240,30 +219,21 @@
             .node-title { font-size: 1.1rem; }
             .sensor-data { gap: 4px; }
             .data-item { padding: 3px 5px; }
-            .vital-value { font-size: 1.5rem; }
         }
 
         /* スマホ横向き */
         @media (orientation: landscape) {
-            body { padding: 8px 15px; }
-            .header { margin-bottom: 5px; padding-bottom: 5px; }
-            .host-circle { width: 35px; height: 35px; font-size: 0.4rem; }
-            .system-info { font-size: 0.5rem; }
-            .vitals-bar { flex-direction: row; align-items: center; padding: 4px 15px; margin-bottom: 8px; }
-            .vitals-items { gap: 30px; }
-            .vital-value { font-size: 1.3rem; }
-            .matrix-title { margin-bottom: 5px; font-size: 0.65rem; }
-            .facility-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-            .node-box { padding: 8px; gap: 4px; }
-            .node-title { font-size: 1rem; }
-            .sensor-data { gap: 3px; font-size: 0.55rem; }
-            .data-item { padding: 3px; }
-            .data-label { font-size: 0.4rem; margin-bottom: 1px; }
-            .env-meters { gap: 3px; }
-            .meter-text { font-size: 0.5rem; }
-            .biometric-status { padding: 3px; font-size: 0.65rem; }
-            .controls { margin-top: 5px; padding-top: 5px; }
-            button { padding: 6px 15px; font-size: 0.8rem; }
+            body { padding: 6px 12px; }
+            .header { margin-bottom: 4px; padding-bottom: 4px; }
+            .host-circle { width: 32px; height: 32px; font-size: 0.35rem; }
+            .system-info { font-size: 0.45rem; }
+            .matrix-title { margin-bottom: 4px; font-size: 0.6rem; }
+            .facility-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .node-box { padding: 6px; gap: 3px; }
+            .node-title { font-size: 0.9rem; }
+            .sensor-data { gap: 2px; font-size: 0.5rem; }
+            .controls { margin-top: 4px; padding-top: 4px; }
+            button { padding: 4px 12px; font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -296,27 +266,15 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- ★ホスト生体データ（バイタル）バー -->
+    <!-- ★ HOST BIOMETRICS (生体データ専用バー) -->
     <!-- ========================================== -->
-    <div class="vitals-bar">
-        <div class="telemetry-tag" style="color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.4);">▶ HOST BIOMETRICS [ID: AC5000]</div>
-        <div class="vitals-items">
-            <div class="vital-box">
-                <span class="vital-label">HEART RATE</span>
-                <span class="vital-value"><span id="vital-hr-val">68</span> <span class="vital-unit">BPM</span></span>
-            </div>
-            <div class="vital-box">
-                <span class="vital-label">SpO2 (OXYGEN)</span>
-                <span class="vital-value"><span id="vital-spo2-val">98</span> <span class="vital-unit">%</span></span>
-            </div>
-            <div class="vital-box">
-                <span class="vital-label">RESPIRATION</span>
-                <span class="vital-value"><span id="vital-rr-val">14</span> <span class="vital-unit">/MIN</span></span>
-            </div>
-            <div class="vital-box">
-                <span class="vital-label">RECOVERY SCORE</span>
-                <span class="vital-value" style="color: var(--delos-cyan); text-shadow: 0 0 8px var(--delos-cyan-dim);"><span id="vital-score-val">85</span> <span class="vital-unit">PTS</span></span>
-            </div>
+    <div class="host-biometrics-bar">
+        <div class="bio-tag">▶ HOST BIOMETRICS [FITBIT AIR]</div>
+        <div class="bio-items">
+            <div class="bio-item"><span class="bio-label">HR:</span> <span class="bio-val" id="bio-hr">72</span> BPM</div>
+            <div class="bio-item"><span class="bio-label">SPO2:</span> <span class="bio-val" id="bio-spo2">98</span>%</div>
+            <div class="bio-item"><span class="bio-label">SLEEP:</span> <span class="bio-val" id="bio-sleep">7.5</span> HRS</div>
+            <div class="bio-item"><span class="bio-label">STATUS:</span> <span class="bio-val" id="bio-state" style="color:var(--delos-cyan);">STANDBY (READY)</span></div>
         </div>
     </div>
 
@@ -337,6 +295,7 @@
     <div class="matrix-title">FACILITY SENSOR MATRIX &lt; - - - &gt; DIAGNOSTICS</div>
     
     <div class="facility-grid">
+        
         <!-- 書斎 (SECTOR 01) -->
         <div class="node-box active" id="node-study">
             <div class="node-header">▶ SECTOR 01</div>
@@ -438,6 +397,7 @@
             </div>
             <div class="biometric-status" id="bio-living" style="color:var(--delos-grey); border-color:#333;">WAITING FOR SIGNAL...</div>
         </div>
+
     </div>
 
     <div class="controls">
@@ -458,24 +418,37 @@
             const textHum = document.getElementById(`text-hum-${sector}`);
 
             if (temp === "RESTRICTED") {
-                valTemp.innerText = "NO SIGNAL"; valTemp.className = "data-value val-alert";
-                textTemp.classList.add('warning-text'); barTemp.style.width = "100%"; barTemp.className = "meter-fill warning";
+                valTemp.innerText = "NO SIGNAL";
+                valTemp.className = "data-value val-alert";
+                textTemp.classList.add('warning-text');
+                barTemp.style.width = "100%";
+                barTemp.className = "meter-fill warning";
             } else if (temp !== "--" && temp !== undefined) {
-                valTemp.innerText = `${temp}°C`; valTemp.className = "data-value val-clear";
+                valTemp.innerText = `${temp}°C`;
+                valTemp.className = "data-value val-clear";
                 textTemp.classList.remove('warning-text');
                 let width = Math.min((parseFloat(temp) / 40) * 100, 100);
-                barTemp.style.width = `${width}%`; barTemp.className = "meter-fill";
+                barTemp.style.width = `${width}%`;
+                barTemp.className = "meter-fill";
                 if (parseFloat(temp) >= 30.0) {
-                    barTemp.classList.add('warning'); textTemp.classList.add('warning-text'); valTemp.classList.replace('val-clear', 'val-alert');
+                    barTemp.classList.add('warning');
+                    textTemp.classList.add('warning-text');
+                    valTemp.classList.replace('val-clear', 'val-alert');
                 }
             }
 
             if (hum === "RESTRICTED") {
-                valHum.innerText = "NO SIGNAL"; valHum.className = "data-value val-alert";
-                textHum.classList.add('warning-text'); barHum.style.width = "100%"; barHum.className = "meter-fill warning";
+                valHum.innerText = "NO SIGNAL";
+                valHum.className = "data-value val-alert";
+                textHum.classList.add('warning-text');
+                barHum.style.width = "100%";
+                barHum.className = "meter-fill warning";
             } else if (hum !== "--" && hum !== undefined) {
-                valHum.innerText = `${hum}%`; valHum.className = "data-value val-clear";
-                textHum.classList.remove('warning-text'); barHum.style.width = `${hum}%`; barHum.className = "meter-fill";
+                valHum.innerText = `${hum}%`;
+                valHum.className = "data-value val-clear";
+                textHum.classList.remove('warning-text');
+                barHum.style.width = `${hum}%`;
+                barHum.className = "meter-fill";
             }
         }
 
@@ -557,6 +530,7 @@
                 updateWindow('val-win-living-f', data.living.window_front);
                 updateWindow('val-win-living-b', data.living.window_back);
                 updatePresence('living', data.living.presence);
+
                 updateLight('val-dining-lgt', data.living.dining_light);
                 updateLight('val-living-lgt', data.living.living_light);
             } catch (error) {
@@ -571,9 +545,7 @@
             }
         }
 
-        // ==========================================
-        // ★外界の気象データを自動更新する処理
-        // ==========================================
+        // 外界気象データの自動更新
         function updateWeather() {
             fetch('/api/weather')
                 .then(response => response.json())
@@ -588,27 +560,18 @@
                 })
                 .catch(error => console.error('Error fetching weather:', error));
         }
+        
         updateWeather();
         setInterval(updateWeather, 600000);
 
-        // ==========================================
-        // ★バイタルデータのダミー変動アニメーション
-        // ==========================================
-        function simulateVitals() {
-            // HR: 65 ~ 75
-            const hr = Math.floor(Math.random() * 11) + 65;
-            // SpO2: 96 ~ 99
-            const spo2 = Math.floor(Math.random() * 4) + 96;
-            // RR: 13 ~ 16
-            const rr = Math.floor(Math.random() * 4) + 13;
-            
-            document.getElementById('vital-hr-val').innerText = hr;
-            document.getElementById('vital-spo2-val').innerText = spo2;
-            document.getElementById('vital-rr-val').innerText = rr;
-        }
-        // 3秒ごとにバイタルの数値を少しだけ変動させる
-        setInterval(simulateVitals, 3000);
-        
+        // Fitbit到着までの間、心拍数などを微変動させるSFアニメーション演出
+        setInterval(() => {
+            let hr = 70 + Math.floor(Math.random() * 6); // 70〜75の間で変動
+            let spo2 = 97 + Math.floor(Math.random() * 2); // 97〜98の間
+            document.getElementById('bio-hr').innerText = hr;
+            document.getElementById('bio-spo2').innerText = spo2;
+        }, 4000);
+
     </script>
 </body>
 </html>
