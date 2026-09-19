@@ -2,7 +2,6 @@ import json
 import requests
 
 def main():
-    # 1. 保存した通行証（トークン）を読み込む
     try:
         with open("fitbit_tokens.json", "r") as f:
             tokens = json.load(f)
@@ -11,30 +10,26 @@ def main():
         return
 
     access_token = tokens.get("access_token")
-
-    # 2. 通信用のヘッダー（身分証明書）をセット
     headers = {
         "Authorization": f"Bearer {access_token}",
-        "Accept-Language": "ja_JP"
+        "Accept": "application/json"
     }
 
-    print("\n--- FITBIT CLOUD UPLINK INITIATED ---")
+    print("\n--- GOOGLE HEALTH API UPLINK INITIATED ---")
     
-    # 3. Fitbitサーバーからプロファイル（体重含む）を取得
-    profile_url = "https://api.fitbit.com/1/user/-/profile.json"
+    # 通信先を新しいGoogle Health APIのプロフィールエンドポイントに変更
+    profile_url = "https://health.googleapis.com/v4/users/me/profile"
     res = requests.get(profile_url, headers=headers)
 
     if res.status_code == 200:
-        data = res.json().get("user", {})
-        print("\n[ HOST BIOMETRICS FOUND ]")
-        print(f"▶ ユーザー名: {data.get('displayName', 'Unknown')}")
-        print(f"▶ 登録体重: {data.get('weight', '--')} kg")
-        print(f"▶ 身長: {data.get('height', '--')} cm")
-        print(f"▶ アカウント作成日: {data.get('memberSince', 'Unknown')}")
+        data = res.json()
+        print("\n[ API CONNECTION SUCCESS ]")
+        print(f"▶ アカウント年齢: {data.get('age', '--')} 歳")
+        date = data.get('membershipStartDate', {})
+        print(f"▶ メンバー登録: {date.get('year', '----')}年{date.get('month', '--')}月")
+        print("\n※現在の権限で通信テストに大成功しました！")
     else:
-        print(f"\n❌ 通信エラー ({res.status_code}): {res.text}")
-        
-    print("\n-------------------------------------")
+        print(f"\n❌ エラー ({res.status_code}): {res.text}")
 
 if __name__ == "__main__":
     main()
