@@ -269,14 +269,16 @@
     <!-- ★ HOST BIOMETRICS (生体データ専用バー) -->
     <!-- ========================================== -->
     <div class="host-biometrics-bar">
-        <div class="bio-tag">▶ HOST BIOMETRICS [FITBIT AIR]</div>
+        <div class="bio-tag">▶ HOST BIOMETRICS [FITBIT UPLINK]</div>
         <div class="bio-items">
+            <div class="bio-item"><span class="bio-label">AGE:</span> <span class="bio-val" id="bio-age">--</span></div>
+            <div class="bio-item"><span class="bio-label">MEMBER SINCE:</span> <span class="bio-val" id="bio-member">--</span></div>
             <div class="bio-item"><span class="bio-label">HR:</span> <span class="bio-val" id="bio-hr">72</span> BPM</div>
-            <div class="bio-item"><span class="bio-label">SPO2:</span> <span class="bio-val" id="bio-spo2">98</span>%</div>
-            <div class="bio-item"><span class="bio-label">SLEEP:</span> <span class="bio-val" id="bio-sleep">7.5</span> HRS</div>
-            <div class="bio-item"><span class="bio-label">STATUS:</span> <span class="bio-val" id="bio-state" style="color:var(--delos-cyan);">STANDBY (READY)</span></div>
+            <div class="bio-item"><span class="bio-label">STATUS:</span> <span class="bio-val" id="bio-state" style="color:var(--delos-cyan);">SYNCED</span></div>
         </div>
     </div>
+
+
 
     <!-- ========================================== -->
     <!-- 外界気象テレメトリーバー -->
@@ -533,6 +535,14 @@
 
                 updateLight('val-dining-lgt', data.living.dining_light);
                 updateLight('val-living-lgt', data.living.living_light);
+
+                // --- ★ここを追加：Fitbitデータの画面反映 ---
+                if (data.biometrics) {
+                    document.getElementById('bio-age').innerText = data.biometrics.age;
+                    document.getElementById('bio-member').innerText = data.biometrics.member_since;
+                }
+
+
             } catch (error) {
                 console.error("API ERROR:", error);
                 alert("SYSTEM ERROR: UPLINK FAILED");

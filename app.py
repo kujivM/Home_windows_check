@@ -9,6 +9,8 @@ import requests
 import subprocess
 import shutil
 import config
+import json
+
 from google import genai
 from flask import request
 from google.genai import types
@@ -30,6 +32,26 @@ DEVICE_IDS = {
     "living_presence": "B0E9FED6E43E", "dining_light": "E89B99AC78FB", "living_light": "FAD5E7882CD9"
 }
 # ==========================================
+# --- ★Fitbit（Google Health）API 通信用関数 ---
+def fetch_fitbit_profile():
+    try:
+        with open("fitbit_tokens.json", "r") as f:
+            tokens = json.load(f)
+        access_token = tokens.get("access_token")
+        
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json"
+        }
+        
+        profile_url = "https://health.googleapis.com/v4/users/me/profile"
+        res = requests.get(profile_url, headers=headers, timeout=5)
+        
+        if res.status_code == 200:
+            return res.json()
+    except Exception as e:
+        print(f"Fitbit API Error: {e}")
+    return None
 
 def get_sb_headers():
     nonce = uuid.uuid4().hex
@@ -129,8 +151,24 @@ def get_status():
     response_data = {
         "study": {"temp": "--", "hum": "--", "window": "UNKNOWN", "light": "OFFLINE"},
         "bed": {"temp": "RESTRICTED", "hum": "RESTRICTED", "window": "UNKNOWN", "presence": False},
-        "living": {"temp": "RESTRICTED", "hum": "RESTRICTED", "window_front": "UNKNOWN", "window_back": "UNKNOWN", "presence": False, "dining_light": "OFFLINE", "living_light": "OFFLINE"}
+        "living": {"temp": "RESTRICTED", "hum": "RESTRICTED", 
+                   "window_front": "UNKNOWN", "window_back": "UNKNOWN", 
+                   "presence": False, 
+                   "dining_light": "OFFLINE", "living_light": "OFFLINE"
+        },
+        # ★ここを追加：Fitbitデータ用の枠
+        "biometrics": {
+            "age": "--",
+            "member_since": "----/--"
+        }
     }
+    # --- ★ここを追加：Fitbitデータの取得処理 ---
+    fb_profile = fetch_fitbit_profile()
+    if fb_profile:
+        response_data["biometrics"]["age"] = fb_profile.get("age", "--")
+        date = fb_profile.get("membershipStartDate", {})
+        response_data["biometrics"]["member_since"] = f"{date.get('year', '----')}/{str(date.get('month', '--')).zfill(2)}"
+
     s_env = fetch_device_status(DEVICE_IDS["study_meter"])
     if s_env:
         response_data["study"]["temp"] = s_env.get("temperature", "--")
