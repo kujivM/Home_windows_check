@@ -35,7 +35,7 @@ DEVICE_IDS = {
 # --- ★Fitbit（Google Health）API 通信用関数 ---
 def fetch_fitbit_profile():
     try:
-        with open("fitbit_tokens.json", "r") as f:
+        with open("/home/terada/Home_windows_check/fitbit_tokens.json", "r") as f:
             tokens = json.load(f)
         access_token = tokens.get("access_token")
         
