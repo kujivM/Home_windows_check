@@ -537,7 +537,7 @@
                 updateLight('val-living-lgt', data.living.living_light);
 
                 // --- ★ここを追加：Fitbitデータの画面反映 ---
-                if (data.biometrics) {
+                if (data.biometrics && data.biometrics.age !== "--") {
                     document.getElementById('bio-age').innerText = data.biometrics.age;
                     document.getElementById('bio-member').innerText = data.biometrics.member_since;
                 }
