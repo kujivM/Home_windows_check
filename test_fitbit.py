@@ -1,11 +1,11 @@
 import json
 import requests
 import config
+from datetime import datetime
 
 TOKEN_PATH = "/home/terada/Home_windows_check/fitbit_tokens.json"
 
 def refresh_fitbit_token(tokens):
-    """リフレッシュトークンを使って新しい鍵を取得する関数"""
     url = "https://oauth2.googleapis.com/token"
     payload = {
         "client_id": config.FITBIT_CLIENT_ID,
@@ -27,7 +27,6 @@ def refresh_fitbit_token(tokens):
         return None
 
 def fetch_api_data(url, tokens):
-    """汎用API通信関数（期限切れ時は自動リフレッシュ）"""
     headers = {
         "Authorization": f"Bearer {tokens.get('access_token')}",
         "Accept": "application/json"
@@ -41,7 +40,7 @@ def fetch_api_data(url, tokens):
             headers["Authorization"] = f"Bearer {tokens.get('access_token')}"
             res = requests.get(url, headers=headers, timeout=5)
         else:
-            return None
+            return None, None
             
     return res.status_code, res.json() if res.status_code == 200 else res.text
 
@@ -53,9 +52,11 @@ def main():
         print("❌ エラー: fitbit_tokens.json が見つかりません。")
         return
 
-    print("\n=== DELOS UPLINK: FITBIT FULL METRICS TEST ===")
+    # ★今日の日付を YYYY-MM-DD 形式で取得
+    today_str = datetime.now().strftime('%Y-%m-%d')
+    print(f"\n=== DELOS UPLINK: FITBIT FULL METRICS TEST ({today_str}) ===")
 
-    # 1. プロフィール (年齢・登録日など)
+    # 1. プロフィール
     print("\n[ FETCHING PROFILE DATA ]")
     profile_url = "https://health.googleapis.com/v4/users/me/profile"
     status, data = fetch_api_data(profile_url, tokens)
@@ -64,9 +65,9 @@ def main():
     else:
         print(f"❌ ERROR {status}: {data}")
 
-    # 2. 睡眠データ (昨晩の睡眠時間など)
+    # 2. 睡眠データ
     print("\n[ FETCHING SLEEP DATA ]")
-    sleep_url = "https://api.fitbit.com/1.2/user/-/sleep/date/today.json"
+    sleep_url = f"https://api.fitbit.com/1.2/user/-/sleep/date/{today_str}.json"
     status, data = fetch_api_data(sleep_url, tokens)
     if status == 200:
         sleep_records = data.get("sleep", [])
@@ -79,9 +80,9 @@ def main():
     else:
         print(f"❌ ERROR {status}: {data}")
 
-    # 3. 活動データ (歩数・カロリーなど)
+    # 3. 活動データ
     print("\n[ FETCHING ACTIVITY DATA ]")
-    activity_url = "https://api.fitbit.com/1/user/-/activities/date/today.json"
+    activity_url = f"https://api.fitbit.com/1/user/-/activities/date/{today_str}.json"
     status, data = fetch_api_data(activity_url, tokens)
     if status == 200:
         summary = data.get("summary", {})
@@ -90,9 +91,9 @@ def main():
     else:
         print(f"❌ ERROR {status}: {data}")
 
-    # 4. 心拍数データ (安静時心拍数)
+    # 4. 心拍数データ
     print("\n[ FETCHING HEART RATE DATA ]")
-    hr_url = "https://api.fitbit.com/1/user/-/activities/heart/date/today/1d.json"
+    hr_url = f"https://api.fitbit.com/1/user/-/activities/heart/date/{today_str}/1d.json"
     status, data = fetch_api_data(hr_url, tokens)
     if status == 200:
         hr_records = data.get("activities-heart", [])
