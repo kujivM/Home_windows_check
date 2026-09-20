@@ -33,12 +33,47 @@ DEVICE_IDS = {
 }
 # ==========================================
 # --- ★Fitbit（Google Health）API 通信用関数 ---
-def fetch_fitbit_profile():
+# --- ★Fitbitトークンリフレッシュ関数 ---
+def refresh_fitbit_token(tokens):
+    import requests
+    import json
+    import config
+    url = "https://oauth2.googleapis.com/token"
+    payload = {
+        "client_id": config.FITBIT_CLIENT_ID,         # config.pyの変数に合わせてください
+        "client_secret": config.FITBIT_CLIENT_SECRET, # config.pyの変数に合わせてください
+        "refresh_token": tokens.get("refresh_token"),
+        "grant_type": "refresh_token"
+    }
     try:
-        with open("/home/terada/Home_windows_check/fitbit_tokens.json", "r") as f:
+        res = requests.post(url, data=payload)
+        if res.status_code == 200:
+            new_tokens = res.json()
+            tokens.update(new_tokens)
+            with open("/home/terada/Home_windows_check/fitbit_tokens.json", "w") as f:
+                json.dump(tokens, f, indent=4)
+            return tokens
+    except Exception as e:
+        print(f"Token refresh error: {e}")
+    return None
+
+# --- ★Fitbitプロフィール取得関数（完全版） ---
+def fetch_fitbit_profile():
+    import os
+    import json
+    import requests
+    try:
+        token_path = "/home/terada/Home_windows_check/fitbit_tokens.json"
+        if not os.path.exists(token_path):
+            return None
+            
+        with open(token_path, "r") as f:
             tokens = json.load(f)
+            
         access_token = tokens.get("access_token")
-        
+        if not access_token:
+            return None
+            
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Accept": "application/json"
@@ -47,10 +82,19 @@ def fetch_fitbit_profile():
         profile_url = "https://health.googleapis.com/v4/users/me/profile"
         res = requests.get(profile_url, headers=headers, timeout=5)
         
+        # ★401エラー（期限切れ）ならリフレッシュして再チャレンジ
+        if res.status_code == 401:
+            tokens = refresh_fitbit_token(tokens)
+            if tokens:
+                headers["Authorization"] = f"Bearer {tokens.get('access_token')}"
+                res = requests.get(profile_url, headers=headers, timeout=5)
+                
         if res.status_code == 200:
             return res.json()
+            
     except Exception as e:
-        print(f"Fitbit API Error: {e}")
+        print(f"Fitbit Error: {e}")
+        
     return None
 
 def get_sb_headers():
