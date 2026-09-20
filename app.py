@@ -162,12 +162,12 @@ def get_status():
             "member_since": "----/--"
         }
     }
-    # --- ★ここを追加：Fitbitデータの取得処理 ---
-    fb_profile = fetch_fitbit_profile()
-    if fb_profile:
-        response_data["biometrics"]["age"] = fb_profile.get("age", "--")
-        date = fb_profile.get("membershipStartDate", {})
-        response_data["biometrics"]["member_since"] = f"{date.get('year', '----')}/{str(date.get('month', '--')).zfill(2)}"
+        # --- ★ここを追加：Fitbitデータの取得処理 ---
+        fb_profile = fetch_fitbit_profile()
+        if fb_profile:
+            response_data["biometrics"]["age"] = fb_profile.get("age", "--")
+            date = fb_profile.get("membershipStartDate", {})
+            response_data["biometrics"]["member_since"] = f"{date.get('year', '----')}/{str(date.get('month', '--')).zfill(2)}"
 
     s_env = fetch_device_status(DEVICE_IDS["study_meter"])
     if s_env:
