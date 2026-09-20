@@ -20,7 +20,7 @@ def main():
     params = {
         "client_id": config.FITBIT_CLIENT_ID,
         "response_type": "code",
-        "scope": " ".join(scopes),
+        "scope": " ".join(SCOPES),
         "redirect_uri": REDIRECT_URI,
         "access_type": "offline", # 自動更新のために必須
         "prompt": "consent"
