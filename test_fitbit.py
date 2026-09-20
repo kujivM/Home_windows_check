@@ -52,56 +52,45 @@ def main():
         print("❌ エラー: fitbit_tokens.json が見つかりません。")
         return
 
-    # ★今日の日付を YYYY-MM-DD 形式で取得
     today_str = datetime.now().strftime('%Y-%m-%d')
-    print(f"\n=== DELOS UPLINK: FITBIT FULL METRICS TEST ({today_str}) ===")
+    print(f"\n=== DELOS UPLINK: GOOGLE HEALTH API TEST ({today_str}) ===")
 
-    # 1. プロフィール
+    # 1. プロフィール (health.googleapis.com)
     print("\n[ FETCHING PROFILE DATA ]")
     profile_url = "https://health.googleapis.com/v4/users/me/profile"
     status, data = fetch_api_data(profile_url, tokens)
     if status == 200:
-        print(f"▶ 年齢: {data.get('age', '--')} 歳")
+        print(f"▶ SUCCESS: 年齢 {data.get('age', '--')} 歳")
     else:
         print(f"❌ ERROR {status}: {data}")
 
-    # 2. 睡眠データ
+    # 2. 睡眠データ (health.googleapis.com)
     print("\n[ FETCHING SLEEP DATA ]")
-    sleep_url = f"https://api.fitbit.com/1.2/user/-/sleep/date/{today_str}.json"
+    sleep_url = "https://health.googleapis.com/v4/users/me/dataTypes/sleep-session/dataPoints?pageSize=1"
     status, data = fetch_api_data(sleep_url, tokens)
     if status == 200:
-        sleep_records = data.get("sleep", [])
-        if sleep_records:
-            duration_hrs = round(sleep_records[0].get("duration", 0) / 3600000, 1)
-            efficiency = sleep_records[0].get("efficiency", 0)
-            print(f"▶ 睡眠時間: {duration_hrs} 時間 (効率: {efficiency}%)")
-        else:
-            print("▶ 今日の睡眠データはまだありません。")
+        print(f"▶ SUCCESS (200 OK): 通信成功！")
+        print(f"▶ データサンプル: {str(data.get('dataPoints', []))[:100]}...")
     else:
         print(f"❌ ERROR {status}: {data}")
 
-    # 3. 活動データ
-    print("\n[ FETCHING ACTIVITY DATA ]")
-    activity_url = f"https://api.fitbit.com/1/user/-/activities/date/{today_str}.json"
+    # 3. 活動データ/歩数 (health.googleapis.com)
+    print("\n[ FETCHING ACTIVITY DATA (STEPS) ]")
+    activity_url = "https://health.googleapis.com/v4/users/me/dataTypes/step-count/dataPoints?pageSize=1"
     status, data = fetch_api_data(activity_url, tokens)
     if status == 200:
-        summary = data.get("summary", {})
-        print(f"▶ 歩数: {summary.get('steps', 0)} 歩")
-        print(f"▶ 消費カロリー: {summary.get('caloriesOut', 0)} kcal")
+        print(f"▶ SUCCESS (200 OK): 通信成功！")
+        print(f"▶ データサンプル: {str(data.get('dataPoints', []))[:100]}...")
     else:
         print(f"❌ ERROR {status}: {data}")
 
-    # 4. 心拍数データ
+    # 4. 心拍数データ (health.googleapis.com)
     print("\n[ FETCHING HEART RATE DATA ]")
-    hr_url = f"https://api.fitbit.com/1/user/-/activities/heart/date/{today_str}/1d.json"
+    hr_url = "https://health.googleapis.com/v4/users/me/dataTypes/heart-rate/dataPoints?pageSize=1"
     status, data = fetch_api_data(hr_url, tokens)
     if status == 200:
-        hr_records = data.get("activities-heart", [])
-        if hr_records:
-            resting_hr = hr_records[0].get("value", {}).get("restingHeartRate", "--")
-            print(f"▶ 安静時心拍数: {resting_hr} BPM")
-        else:
-            print("▶ 心拍数データがありません。")
+        print(f"▶ SUCCESS (200 OK): 通信成功！")
+        print(f"▶ データサンプル: {str(data.get('dataPoints', []))[:100]}...")
     else:
         print(f"❌ ERROR {status}: {data}")
 
