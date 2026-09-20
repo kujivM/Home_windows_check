@@ -14,6 +14,8 @@ def main():
         "https://www.googleapis.com/auth/googlehealth.profile.readonly",
         "https://www.googleapis.com/auth/googlehealth.sleep.readonly",
         "https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly"
+        # 既存のプロフィールのスコープに以下を追加
+        'https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly',
     ]
     
     params = {
