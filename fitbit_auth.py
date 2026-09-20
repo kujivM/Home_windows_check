@@ -11,10 +11,10 @@ def main():
     
     # 取得したいデータの種類（スコープ）
     SCOPES = [
-    'https://www.googleapis.com/auth/fitbit.activity.read',
-    'https://www.googleapis.com/auth/fitbit.heartrate.read',
-    'https://www.googleapis.com/auth/fitbit.sleep.read',
-    'https://www.googleapis.com/auth/fitbit.profile.read'
+    'https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly',
+    'https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly',
+    'https://www.googleapis.com/auth/googlehealth.sleep.readonly',
+    'https://www.googleapis.com/auth/googlehealth.profile.readonly'
     ]
     
     params = {
