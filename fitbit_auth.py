@@ -10,12 +10,11 @@ def main():
     auth_url = "https://accounts.google.com/o/oauth2/v2/auth"
     
     # 取得したいデータの種類（スコープ）
-    scopes = [
-        "https://www.googleapis.com/auth/googlehealth.profile.readonly",
-        "https://www.googleapis.com/auth/googlehealth.sleep.readonly",
-        "https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly",
-        # 既存のプロフィールのスコープに以下を追加
-        'https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly'
+    SCOPES = [
+    'https://www.googleapis.com/auth/fitbit.activity.read',
+    'https://www.googleapis.com/auth/fitbit.heartrate.read',
+    'https://www.googleapis.com/auth/fitbit.sleep.read',
+    'https://www.googleapis.com/auth/fitbit.profile.read'
     ]
     
     params = {
