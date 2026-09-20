@@ -515,7 +515,7 @@
                 syncPercent.innerText = Math.floor(percent).toString().padStart(3, '0') + "%";
             }, 30);
 
-            try {
+try {
                 const response = await fetch('/api/status');
                 const data = await response.json();
                 await new Promise(resolve => setTimeout(resolve, 1500));
@@ -536,27 +536,16 @@
                 updateLight('val-dining-lgt', data.living.dining_light);
                 updateLight('val-living-lgt', data.living.living_light);
 
-                // --- ★ここを追加（1箇所だけ、他のupdate...のすぐ下に入れる） ---
+                // --- ★Fitbitデータの画面反映 ---
                 if (data.biometrics && data.biometrics.age !== "--") {
                     document.getElementById('bio-age').innerText = data.biometrics.age;
                     document.getElementById('bio-member').innerText = data.biometrics.member_since;
                 }
-                
-                addLog("SCAN COMPLETE. TELEMETRY UPDATED."); // ★ログ追加
-
-                // ★センサー状態から異常を検知して警告ログを追加
-                if (data.study.window === "open" || data.study.window === "timeOutNotClose") addLog("WARNING: SECTOR 01 WINDOW BREACHED.", true);
-                if (data.bed.window === "open" || data.bed.window === "timeOutNotClose") addLog("WARNING: SECTOR 02 WINDOW BREACHED.", true);
-                if (data.bed.presence) addLog("ALERT: BIOMETRIC DETECTED IN SECTOR 02.", true);
-                if (data.living.window_front === "open" || data.living.window_front === "timeOutNotClose") addLog("WARNING: SECTOR 03 FRONT WINDOW BREACHED.", true);
-                if (data.living.window_back === "open" || data.living.window_back === "timeOutNotClose") addLog("WARNING: SECTOR 03 BACK WINDOW BREACHED.", true);
-                if (data.living.presence) addLog("ALERT: BIOMETRIC DETECTED IN SECTOR 03.", true);
 
             } catch (error) {
                 console.error("API ERROR:", error);
                 alert("SYSTEM ERROR: UPLINK FAILED");
-                addLog("SYSTEM ERROR: UPLINK FAILED.", true); // ★ログ追加
-            } finally {                
+            } finally {
                 syncUi.classList.remove('active');
                 nodes.forEach(id => { document.getElementById(`node-${id}`).style.opacity = '1'; });
                 syncRing.style.transition = 'none';
