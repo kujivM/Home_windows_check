@@ -346,6 +346,7 @@ def get_biometrics_detail():
     token_path = "/home/terada/Home_windows_check/fitbit_tokens.json"
     
     if not os.path.exists(token_path):
+        print("DEBUG: トークンファイルが見つかりません！")
         return jsonify(response_data)
         
     try:
@@ -356,9 +357,12 @@ def get_biometrics_detail():
         print(f"Token Read Error: {e}")
         return jsonify(response_data)
 
-    # 1. 睡眠データの取得（独立ブロック）
+    print("\n=== FITBIT UPLINK DIAGNOSTICS ===")
+    
+    # 1. 睡眠データの取得
     try:
         fb_sleep = fetch_fitbit_sleep(tokens)
+        print(f"▶ SLEEP: {fb_sleep}")
         if fb_sleep and 'dataPoints' in fb_sleep and fb_sleep['dataPoints']:
             response_data["sleep"]["duration"] = "7.2" 
             response_data["sleep"]["efficiency"] = "88"
@@ -366,25 +370,25 @@ def get_biometrics_detail():
     except Exception as e:
         print(f"Bio Sleep Error: {e}")
 
-    # 2. 歩数データの取得（独立ブロック）
+    # 2. 歩数データの取得
     try:
         fb_steps = fetch_fitbit_activity(tokens)
+        print(f"▶ STEPS: {fb_steps}")
         if fb_steps and 'dataPoints' in fb_steps and fb_steps['dataPoints']:
             vals = fb_steps['dataPoints'][0].get('value', [])
             if vals:
-                # 安全な数値変換（万が一文字列や小数で返ってきてもクラッシュさせない）
                 raw_step = vals[0].get('intVal', vals[0].get('fpVal', 0))
                 steps = int(float(raw_step))
-                
                 response_data["steps"]["count"] = f"{steps:,}"
                 response_data["steps"]["progress"] = f"{min(int((steps / 10000) * 100), 100)}"
                 response_data["steps"]["calories"] = f"{int(steps * 0.04 + 1600):,}"
     except Exception as e:
         print(f"Bio Steps Error: {e}")
     
-    # 3. 心拍データの取得（独立ブロック）
+    # 3. 心拍データの取得
     try:
         fb_hr = fetch_fitbit_hr(tokens)
+        print(f"▶ HR: {fb_hr}")
         if fb_hr and 'dataPoints' in fb_hr and fb_hr['dataPoints']:
             vals = fb_hr['dataPoints'][0].get('value', [])
             if vals:
@@ -394,6 +398,8 @@ def get_biometrics_detail():
                     response_data["hr"]["resting"] = str(int(float(current_hr)) - 10)
     except Exception as e:
         print(f"Bio HR Error: {e}")
+        
+    print("=================================\n")
 
     return jsonify(response_data)
 
