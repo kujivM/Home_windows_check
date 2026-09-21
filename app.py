@@ -97,6 +97,60 @@ def fetch_fitbit_profile():
         
     return None
 
+# --- ★Fitbit 睡眠データ取得 ---
+def fetch_fitbit_sleep(tokens):
+    import requests
+    url = "https://health.googleapis.com/v4/users/me/dataTypes/sleep/dataPoints?pageSize=1"
+    headers = {"Authorization": f"Bearer {tokens.get('access_token')}", "Accept": "application/json"}
+    try:
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 401:
+            tokens = refresh_fitbit_token(tokens)
+            if tokens:
+                headers["Authorization"] = f"Bearer {tokens.get('access_token')}"
+                res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 200:
+            return res.json()
+    except Exception as e:
+        print(f"Fitbit Sleep Error: {e}")
+    return None
+
+# --- ★Fitbit 活動データ(歩数)取得 ---
+def fetch_fitbit_activity(tokens):
+    import requests
+    url = "https://health.googleapis.com/v4/users/me/dataTypes/steps/dataPoints?pageSize=1"
+    headers = {"Authorization": f"Bearer {tokens.get('access_token')}", "Accept": "application/json"}
+    try:
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 401:
+            tokens = refresh_fitbit_token(tokens)
+            if tokens:
+                headers["Authorization"] = f"Bearer {tokens.get('access_token')}"
+                res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 200:
+            return res.json()
+    except Exception as e:
+        print(f"Fitbit Activity Error: {e}")
+    return None
+
+# --- ★Fitbit 心拍数取得 ---
+def fetch_fitbit_hr(tokens):
+    import requests
+    url = "https://health.googleapis.com/v4/users/me/dataTypes/heart-rate/dataPoints?pageSize=1"
+    headers = {"Authorization": f"Bearer {tokens.get('access_token')}", "Accept": "application/json"}
+    try:
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 401:
+            tokens = refresh_fitbit_token(tokens)
+            if tokens:
+                headers["Authorization"] = f"Bearer {tokens.get('access_token')}"
+                res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 200:
+            return res.json()
+    except Exception as e:
+        print(f"Fitbit HR Error: {e}")
+    return None
+
 def get_sb_headers():
     nonce = uuid.uuid4().hex
     t = int(round(time.time() * 1000))
@@ -200,18 +254,50 @@ def get_status():
                    "presence": False, 
                    "dining_light": "OFFLINE", "living_light": "OFFLINE"
         },
-        # ★ここを追加：Fitbitデータ用の枠
+# ★ここを追加：Fitbitデータ用の枠（全データ対応版）
         "biometrics": {
             "age": "--",
-            "member_since": "----/--"
+            "member_since": "----/--",
+            "hr": "--",
+            "steps": "--",
+            "status": "OFFLINE"
         }
     }
     # --- ★ここを追加：Fitbitデータの取得処理 ---
+    import os
+    import json
+    token_path = "/home/terada/Home_windows_check/fitbit_tokens.json"
+    
+    # 1. プロフィール取得（既存処理）
     fb_profile = fetch_fitbit_profile()
     if fb_profile:
         response_data["biometrics"]["age"] = fb_profile.get("age", "--")
         date = fb_profile.get("membershipStartDate", {})
         response_data["biometrics"]["member_since"] = f"{date.get('year', '----')}/{str(date.get('month', '--')).zfill(2)}"
+        response_data["biometrics"]["status"] = "SYNCED"
+
+    # 2. 追加データの取得（トークンを直接読み込んで実行）
+    if os.path.exists(token_path):
+        try:
+            with open(token_path, "r") as f:
+                tokens = json.load(f)
+                
+            # 心拍数の取得
+            fb_hr = fetch_fitbit_hr(tokens)
+            if fb_hr and 'dataPoints' in fb_hr and fb_hr['dataPoints']:
+                vals = fb_hr['dataPoints'][0].get('value', [])
+                if vals:
+                    response_data["biometrics"]["hr"] = vals[0].get('intVal', vals[0].get('fpVal', '--'))
+            
+            # 歩数の取得（必要であれば）
+            fb_steps = fetch_fitbit_activity(tokens)
+            if fb_steps and 'dataPoints' in fb_steps and fb_steps['dataPoints']:
+                vals = fb_steps['dataPoints'][0].get('value', [])
+                if vals:
+                    response_data["biometrics"]["steps"] = vals[0].get('intVal', vals[0].get('fpVal', '--'))
+                    
+        except Exception as e:
+            print(f"Fitbit Fetch Error: {e}")
 
     s_env = fetch_device_status(DEVICE_IDS["study_meter"])
     if s_env:
