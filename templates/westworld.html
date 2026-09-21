@@ -515,10 +515,19 @@
                 syncPercent.innerText = Math.floor(percent).toString().padStart(3, '0') + "%";
             }, 30);
 
-try {
+            try {
                 const response = await fetch('/api/status');
                 const data = await response.json();
                 await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // --- ★本物のFitbitデータを反映 ---
+                if (data.biometrics && data.biometrics.status === "SYNCED") {
+                    document.getElementById('bio-state').innerText = "SYNCED (ONLINE)";
+                    document.getElementById('bio-state').style.color = "var(--delos-cyan)";
+                    if (data.biometrics.hr !== "--") {
+                        document.getElementById('bio-hr').innerText = data.biometrics.hr;
+                    }
+                }
 
                 updateEnv('study', data.study.temp, data.study.hum);
                 updateWindow('val-win-study', data.study.window);
@@ -572,14 +581,6 @@ try {
         
         updateWeather();
         setInterval(updateWeather, 600000);
-
-        // Fitbit到着までの間、心拍数などを微変動させるSFアニメーション演出
-        setInterval(() => {
-            let hr = 70 + Math.floor(Math.random() * 6); // 70〜75の間で変動
-            let spo2 = 97 + Math.floor(Math.random() * 2); // 97〜98の間
-            document.getElementById('bio-hr').innerText = hr;
-            document.getElementById('bio-spo2').innerText = spo2;
-        }, 4000);
 
     </script>
 </body>
