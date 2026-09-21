@@ -188,6 +188,11 @@ def index():
 def system_page():
     return render_template('westworld_system.html')
 
+# --- ★生体情報解析画面（3ページ目）の追加 ---
+@app.route('/biometrics')
+def biometrics_page():
+    return render_template('westworld_biometrics.html')
+
 # --- ★アプリ認定用マニフェスト ---
 @app.route('/manifest.json')
 def manifest():
