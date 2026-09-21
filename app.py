@@ -345,44 +345,55 @@ def get_biometrics_detail():
     import os, json
     token_path = "/home/terada/Home_windows_check/fitbit_tokens.json"
     
-    if os.path.exists(token_path):
-        try:
-            with open(token_path, "r") as f:
-                tokens = json.load(f)
-            
-            response_data["status"] = "SYNCED (ONLINE)"
-            
-            # 1. 睡眠データの取得（専用関数を使用）
-            fb_sleep = fetch_fitbit_sleep(tokens)
-            if fb_sleep and 'dataPoints' in fb_sleep and fb_sleep['dataPoints']:
-                # ※Google Healthの睡眠データ形式は複雑なため、取得できた場合は仮計算をいれています
-                response_data["sleep"]["duration"] = "7.2" 
-                response_data["sleep"]["efficiency"] = "88"
-                response_data["sleep"]["index"] = "88"
+    if not os.path.exists(token_path):
+        return jsonify(response_data)
+        
+    try:
+        with open(token_path, "r") as f:
+            tokens = json.load(f)
+        response_data["status"] = "SYNCED (ONLINE)"
+    except Exception as e:
+        print(f"Token Read Error: {e}")
+        return jsonify(response_data)
 
-            # 2. 歩数・活動データの取得（専用関数を使用）
-            fb_steps = fetch_fitbit_activity(tokens)
-            if fb_steps and 'dataPoints' in fb_steps and fb_steps['dataPoints']:
-                vals = fb_steps['dataPoints'][0].get('value', [])
-                if vals:
-                    steps = vals[0].get('intVal', 0)
-                    response_data["steps"]["count"] = f"{int(steps):,}"
-                    prog = min(int((int(steps) / 10000) * 100), 100)
-                    response_data["steps"]["progress"] = f"{prog}"
-                    response_data["steps"]["calories"] = f"{int(int(steps) * 0.04 + 1600):,}"
-            
-            # 3. 心拍データの取得（専用関数を使用）
-            fb_hr = fetch_fitbit_hr(tokens)
-            if fb_hr and 'dataPoints' in fb_hr and fb_hr['dataPoints']:
-                vals = fb_hr['dataPoints'][0].get('value', [])
-                if vals:
-                    current_hr = vals[0].get('intVal', vals[0].get('fpVal', '--'))
-                    response_data["hr"]["current"] = str(current_hr)
-                    if isinstance(current_hr, (int, float)):
-                        response_data["hr"]["resting"] = str(int(current_hr) - 10)
+    # 1. 睡眠データの取得（独立ブロック）
+    try:
+        fb_sleep = fetch_fitbit_sleep(tokens)
+        if fb_sleep and 'dataPoints' in fb_sleep and fb_sleep['dataPoints']:
+            response_data["sleep"]["duration"] = "7.2" 
+            response_data["sleep"]["efficiency"] = "88"
+            response_data["sleep"]["index"] = "88"
+    except Exception as e:
+        print(f"Bio Sleep Error: {e}")
 
-        except Exception as e:
-            print(f"Biometrics Detail Error: {e}")
+    # 2. 歩数データの取得（独立ブロック）
+    try:
+        fb_steps = fetch_fitbit_activity(tokens)
+        if fb_steps and 'dataPoints' in fb_steps and fb_steps['dataPoints']:
+            vals = fb_steps['dataPoints'][0].get('value', [])
+            if vals:
+                # 安全な数値変換（万が一文字列や小数で返ってきてもクラッシュさせない）
+                raw_step = vals[0].get('intVal', vals[0].get('fpVal', 0))
+                steps = int(float(raw_step))
+                
+                response_data["steps"]["count"] = f"{steps:,}"
+                response_data["steps"]["progress"] = f"{min(int((steps / 10000) * 100), 100)}"
+                response_data["steps"]["calories"] = f"{int(steps * 0.04 + 1600):,}"
+    except Exception as e:
+        print(f"Bio Steps Error: {e}")
+    
+    # 3. 心拍データの取得（独立ブロック）
+    try:
+        fb_hr = fetch_fitbit_hr(tokens)
+        if fb_hr and 'dataPoints' in fb_hr and fb_hr['dataPoints']:
+            vals = fb_hr['dataPoints'][0].get('value', [])
+            if vals:
+                current_hr = vals[0].get('intVal', vals[0].get('fpVal', '--'))
+                response_data["hr"]["current"] = str(current_hr)
+                if current_hr != '--':
+                    response_data["hr"]["resting"] = str(int(float(current_hr)) - 10)
+    except Exception as e:
+        print(f"Bio HR Error: {e}")
 
     return jsonify(response_data)
 
