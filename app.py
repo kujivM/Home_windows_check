@@ -346,7 +346,6 @@ def get_biometrics_detail():
     token_path = "/home/terada/Home_windows_check/fitbit_tokens.json"
     
     if not os.path.exists(token_path):
-        print("DEBUG: トークンファイルが見つかりません！")
         return jsonify(response_data)
         
     try:
@@ -357,49 +356,54 @@ def get_biometrics_detail():
         print(f"Token Read Error: {e}")
         return jsonify(response_data)
 
-    print("\n=== FITBIT UPLINK DIAGNOSTICS ===")
-    
     # 1. 睡眠データの取得
     try:
         fb_sleep = fetch_fitbit_sleep(tokens)
-        print(f"▶ SLEEP: {fb_sleep}")
-        if fb_sleep and 'dataPoints' in fb_sleep and fb_sleep['dataPoints']:
+        if fb_sleep and 'dataPoints' in fb_sleep and len(fb_sleep['dataPoints']) > 0:
+            # データが存在した場合のみ仮値をセット（後日厳密な計算式を入れます）
             response_data["sleep"]["duration"] = "7.2" 
             response_data["sleep"]["efficiency"] = "88"
             response_data["sleep"]["index"] = "88"
     except Exception as e:
-        print(f"Bio Sleep Error: {e}")
+        pass
 
-    # 2. 歩数データの取得
+    # 2. 歩数データの取得（数百個のデータをすべて足し算する）
     try:
         fb_steps = fetch_fitbit_activity(tokens)
-        print(f"▶ STEPS: {fb_steps}")
-        if fb_steps and 'dataPoints' in fb_steps and fb_steps['dataPoints']:
-            vals = fb_steps['dataPoints'][0].get('value', [])
-            if vals:
-                raw_step = vals[0].get('intVal', vals[0].get('fpVal', 0))
-                steps = int(float(raw_step))
-                response_data["steps"]["count"] = f"{steps:,}"
-                response_data["steps"]["progress"] = f"{min(int((steps / 10000) * 100), 100)}"
-                response_data["steps"]["calories"] = f"{int(steps * 0.04 + 1600):,}"
+        if fb_steps and 'dataPoints' in fb_steps:
+            total_steps = 0
+            for pt in fb_steps['dataPoints']:
+                # ログから判明した正しい階層 'steps' -> 'count' を抽出
+                step_data = pt.get('steps', {})
+                count_str = step_data.get('count', '0')
+                total_steps += int(count_str)
+            
+            if total_steps > 0:
+                response_data["steps"]["count"] = f"{total_steps:,}"
+                response_data["steps"]["progress"] = f"{min(int((total_steps / 10000) * 100), 100)}"
+                response_data["steps"]["calories"] = f"{int(total_steps * 0.04 + 1600):,}"
     except Exception as e:
-        print(f"Bio Steps Error: {e}")
+        pass
     
     # 3. 心拍データの取得
     try:
         fb_hr = fetch_fitbit_hr(tokens)
-        print(f"▶ HR: {fb_hr}")
-        if fb_hr and 'dataPoints' in fb_hr and fb_hr['dataPoints']:
-            vals = fb_hr['dataPoints'][0].get('value', [])
-            if vals:
-                current_hr = vals[0].get('intVal', vals[0].get('fpVal', '--'))
+        if fb_hr and 'dataPoints' in fb_hr and len(fb_hr['dataPoints']) > 0:
+            pt = fb_hr['dataPoints'][0]
+            hr_val = None
+            
+            # Google Healthの心拍データの形式揺れに対応
+            if 'heartRate' in pt:
+                hr_val = pt['heartRate'].get('bpm')
+            elif 'value' in pt and len(pt['value']) > 0:
+                hr_val = pt['value'][0].get('intVal', pt['value'][0].get('fpVal'))
+            
+            if hr_val:
+                current_hr = int(float(hr_val))
                 response_data["hr"]["current"] = str(current_hr)
-                if current_hr != '--':
-                    response_data["hr"]["resting"] = str(int(float(current_hr)) - 10)
+                response_data["hr"]["resting"] = str(current_hr - 10)
     except Exception as e:
-        print(f"Bio HR Error: {e}")
-        
-    print("=================================\n")
+        pass
 
     return jsonify(response_data)
 
