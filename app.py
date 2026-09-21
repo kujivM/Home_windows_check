@@ -327,6 +327,64 @@ def get_status():
 
     return jsonify(response_data)
 
+# --- ★3画面目（生体情報解析）用のデータ取得API ---
+@app.route('/api/biometrics_detail')
+def get_biometrics_detail():
+    response_data = {
+        "status": "OFFLINE",
+        "sleep": {"duration": "--", "efficiency": "--", "index": "--"},
+        "steps": {"count": "--", "active_min": "--", "calories": "--", "progress": "--"},
+        "hr": {"current": "--", "resting": "--"}
+    }
+    
+    import os, json
+    token_path = "/home/terada/Home_windows_check/fitbit_tokens.json"
+    
+    if os.path.exists(token_path):
+        try:
+            with open(token_path, "r") as f:
+                tokens = json.load(f)
+            
+            response_data["status"] = "SYNCED (ONLINE)"
+            
+            # 1. 睡眠データの取得（Google Health）
+            fb_sleep = fetch_google_health_data("https://health.googleapis.com/v4/users/me/dataTypes/sleep/dataPoints?pageSize=1")
+            if fb_sleep and 'dataPoints' in fb_sleep and fb_sleep['dataPoints']:
+                # ※Google Healthの睡眠データ形式は複雑なため、取得できた場合は仮計算をいれています
+                # 本来はstartTimeとendTimeの差分などから算出します
+                response_data["sleep"]["duration"] = "7.2" # 仮（後で厳密なパース処理を入れます）
+                response_data["sleep"]["efficiency"] = "88"
+                response_data["sleep"]["index"] = "88"
+
+            # 2. 歩数・活動データの取得
+            fb_steps = fetch_google_health_data("https://health.googleapis.com/v4/users/me/dataTypes/steps/dataPoints?pageSize=1")
+            if fb_steps and 'dataPoints' in fb_steps and fb_steps['dataPoints']:
+                vals = fb_steps['dataPoints'][0].get('value', [])
+                if vals:
+                    steps = vals[0].get('intVal', 0)
+                    response_data["steps"]["count"] = f"{steps:,}"
+                    # 1万歩を目標としたプログレス計算
+                    prog = min(int((int(steps) / 10000) * 100), 100)
+                    response_data["steps"]["progress"] = f"{prog}"
+                    # 簡易カロリー計算（歩数 * 0.04）
+                    response_data["steps"]["calories"] = f"{int(steps * 0.04 + 1600):,}"
+            
+            # 3. 心拍データの取得
+            fb_hr = fetch_google_health_data("https://health.googleapis.com/v4/users/me/dataTypes/heart-rate/dataPoints?pageSize=1")
+            if fb_hr and 'dataPoints' in fb_hr and fb_hr['dataPoints']:
+                vals = fb_hr['dataPoints'][0].get('value', [])
+                if vals:
+                    current_hr = vals[0].get('intVal', vals[0].get('fpVal', '--'))
+                    response_data["hr"]["current"] = str(current_hr)
+                    # 安静時は簡易的に-10で表示
+                    if isinstance(current_hr, (int, float)):
+                        response_data["hr"]["resting"] = str(int(current_hr) - 10)
+
+        except Exception as e:
+            print(f"Biometrics Detail Error: {e}")
+
+    return jsonify(response_data)
+
 # ==========================================
 # ★外界の気象データを取得するAPI
 # ==========================================

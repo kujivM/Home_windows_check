@@ -235,28 +235,46 @@
         <button onclick="fetchBiometrics()">EXTRACT DATA</button>
     </div>
 
-    <script>
+<script>
         async function fetchBiometrics() {
-            // ここに app.py から生体データを取得して画面を更新する処理を追加します
-            // 現在はデザイン確認用のため、ダミー値をセットしています
-            
-            document.getElementById('val-sleep-duration').innerText = "7.2 HRS";
-            document.getElementById('val-sleep-eff').innerText = "88 %";
-            document.getElementById('val-sleep-index').innerText = "88 / 100";
-            document.getElementById('bar-sleep').style.width = "88%";
+            try {
+                // PythonのAPIからデータを取得
+                const response = await fetch('/api/biometrics_detail');
+                const data = await response.json();
 
-            document.getElementById('val-steps').innerText = "8,432";
-            document.getElementById('val-active-min').innerText = "45 MIN";
-            document.getElementById('val-calories').innerText = "2,150 KCAL";
-            document.getElementById('val-step-prog').innerText = "84%";
-            document.getElementById('bar-steps').style.width = "84%";
+                // 睡眠データの反映
+                document.getElementById('val-sleep-duration').innerText = data.sleep.duration + " HRS";
+                document.getElementById('val-sleep-eff').innerText = data.sleep.efficiency + " %";
+                document.getElementById('val-sleep-index').innerText = data.sleep.index + " / 100";
+                document.getElementById('bar-sleep').style.width = data.sleep.index + "%";
+                
+                // 活動データの反映
+                document.getElementById('val-steps').innerText = data.steps.count;
+                document.getElementById('val-calories').innerText = data.steps.calories + " KCAL";
+                document.getElementById('val-step-prog').innerText = data.steps.progress + "%";
+                document.getElementById('bar-steps').style.width = data.steps.progress + "%";
 
-            document.getElementById('val-hr-current').innerText = "72 BPM";
-            document.getElementById('val-hr-rest').innerText = "64 BPM";
+                // 心拍データの反映
+                document.getElementById('val-hr-current').innerText = data.hr.current + " BPM";
+                document.getElementById('val-hr-rest').innerText = data.hr.resting + " BPM";
+
+                // ステータス更新
+                if (data.status.includes("SYNCED")) {
+                    document.getElementById('status-sleep').innerText = "SYNCED";
+                    document.getElementById('status-act').innerText = "SYNCED";
+                    document.getElementById('status-hr').innerText = "SYNCED";
+                }
+
+            } catch (error) {
+                console.error("Biometrics Fetch Error:", error);
+                document.getElementById('status-sleep').innerText = "ERROR";
+                document.getElementById('status-act').innerText = "ERROR";
+                document.getElementById('status-hr').innerText = "ERROR";
+            }
         }
 
         // ページロード時に実行
-        setTimeout(fetchBiometrics, 500);
+        fetchBiometrics();
     </script>
 </body>
 </html>
