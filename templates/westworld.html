@@ -402,11 +402,16 @@
 
     </div>
 
-    <div class="controls">
+<div class="controls">
+        <!-- 2画面目（システム診断）へのリンク -->
         <button onclick="location.href='/system'" style="margin-right:auto; border-color:var(--delos-grey); color:var(--delos-grey);">CORE DIAGNOSTICS</button>
+        
+        <!-- ★ここに追加：3画面目（生体情報解析）へのリンク -->
+        <button onclick="location.href='/biometrics'" style="margin-right:15px; border-color:var(--delos-grey); color:var(--delos-grey);">BIOMETRIC ANALYSIS</button>
+        
         <button id="scan-btn" onclick="executeScan()">REFRESH TELEMETRY</button>
     </div>
-
+    
     <script>
         const today = new Date();
         document.getElementById('current-date').innerText = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
