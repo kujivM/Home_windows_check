@@ -224,6 +224,82 @@
         .btn-secondary { border-color: var(--delos-grey); color: var(--delos-grey); }
         .btn-secondary:hover { background: var(--delos-grey); color: var(--delos-bg); }
 
+/* ==========================================
+           スマホ縦向き（Portrait）特化レイアウト
+           ========================================== */
+        @media screen and (max-width: 768px) {
+            body {
+                height: auto; /* 縦長になるためスクロールを許可 */
+                overflow-y: auto;
+                padding: 10px;
+            }
+            .main-container {
+                /* 左右2列だったものを、上下1列に変更 */
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                gap: 15px;
+                padding: 10px;
+            }
+            .left-panel {
+                border-right: none;
+                border-bottom: 1px dashed var(--delos-cyan-dim);
+                padding-top: 10px;
+                padding-bottom: 20px;
+            }
+            .target-marker {
+                top: 0;
+            }
+            /* 顔写真サイズをスマホに合わせて少し縮小 */
+            .profile-container {
+                width: 200px;
+                height: 200px;
+                margin-top: 15px;
+            }
+            .profile-img {
+                width: 120px;
+                height: 120px;
+            }
+            .ring-text {
+                width: 200px;
+                height: 200px;
+            }
+            .ring-outer {
+                width: 160px;
+                height: 160px;
+            }
+            /* 高密度データ群をスマホ幅に調整 */
+            .sys-box {
+                grid-template-columns: repeat(2, 1fr); /* 3列から2列に変更 */
+                gap: 10px;
+            }
+            .tab-group {
+                flex-wrap: wrap; /* タブが入り切らない場合は折り返す */
+            }
+            /* 大型生体データをスマホ幅に調整 */
+            .vital-row {
+                flex-direction: column; /* 横並びから縦並びに変更 */
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .v-block {
+                flex-direction: row-reverse;
+                justify-content: flex-end;
+                width: 100%;
+            }
+            .v-lbl {
+                text-align: left;
+                align-items: flex-start;
+            }
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .action-btn {
+                width: 100%;
+            }
+        }
+
     </style>
 </head>
 <body>
