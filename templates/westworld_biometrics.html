@@ -3,171 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>DELOS SYSTEM - HUD BIOMETRICS</title>
+    <title>DELOS SYSTEM - HOST DIAGNOSTICS</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
             --delos-cyan: #4df8ff;
-            --delos-cyan-dim: rgba(77, 248, 255, 0.15);
-            --delos-bg: #090e11;
+            --delos-cyan-dim: rgba(77, 248, 255, 0.2);
+            --delos-bg: #050a0d;
             --delos-grey: #6b8294;
             --delos-alert: #ff3355;
+            --delos-text: #c0f8ff;
         }
 
         * { box-sizing: border-box; }
 
         body {
             background-color: var(--delos-bg);
-            color: var(--delos-cyan);
-            font-family: 'Rajdhani', sans-serif;
+            color: var(--delos-text);
+            font-family: 'Share Tech Mono', monospace;
             margin: 0;
             padding: 15px;
             display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            height: 100vh;
             overflow: hidden;
             text-transform: uppercase;
-            background-image: 
-                linear-gradient(rgba(77, 248, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(77, 248, 255, 0.05) 1px, transparent 1px);
-            background-size: 15px 15px;
+            /* ブラウン管/モニター風のスキャンライン背景 */
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(77,248,255,0.03) 2px, rgba(77,248,255,0.03) 4px);
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+            width: 100%;
+            height: 100%;
+            border: 1px solid var(--delos-cyan-dim);
+            padding: 20px;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(77,248,255,0.05) 0%, transparent 70%);
+        }
+        
+        /* ===============================
+           左パネル：頭部プロファイル
+        =============================== */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 1px solid var(--delos-cyan-dim);
+            padding-top: 40px;
             position: relative;
         }
 
-        /* --- 画面全体のレイアウト --- */
-        .hud-container {
-            display: grid;
-            grid-template-columns: 250px 1fr 250px;
-            grid-template-rows: 80px 1fr 60px;
-            flex-grow: 1;
-            gap: 20px;
-            position: relative;
+        /* 逆三角形のターゲットマーカー */
+        .target-marker {
+            position: absolute;
+            top: 20px;
+            width: 0; height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 25px solid var(--delos-cyan);
+            filter: drop-shadow(0 0 8px var(--delos-cyan));
             z-index: 10;
         }
 
-        /* --- 上部：ヘッダーと心拍数 --- */
-        .hud-header {
-            grid-column: 1 / -1;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            border-bottom: 1px dashed var(--delos-cyan-dim);
-        }
-
-        .host-id-box {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .host-circle {
-            width: 60px; height: 60px; border: 2px solid var(--delos-cyan);
-            border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            font-size: 0.5rem; text-align: center; box-shadow: 0 0 15px var(--delos-cyan-dim);
+        .profile-container {
             position: relative;
-        }
-        .host-circle::before {
-            content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
-            border: 1px dashed var(--delos-grey); border-radius: 50%;
-            animation: rotate 15s linear infinite;
-        }
-
-        @keyframes rotate { 100% { transform: rotate(360deg); } }
-
-        .top-vitals {
-            display: flex;
-            gap: 40px;
-            align-items: flex-end;
-        }
-
-        .vital-group { display: flex; flex-direction: column; align-items: center; }
-        .vital-label { font-size: 0.8rem; color: var(--delos-grey); font-family: 'Share Tech Mono', monospace; }
-        .vital-value { font-size: 3rem; font-weight: 700; line-height: 0.9; text-shadow: 0 0 10px var(--delos-cyan-dim); }
-        .vital-unit { font-size: 1rem; color: var(--delos-cyan); }
-        
-        /* 心拍パルスアニメーション */
-        .pulse-text { color: var(--delos-alert); text-shadow: 0 0 10px rgba(255,51,85,0.5); animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-
-        /* --- 中央：人体スキャン領域 --- */
-        .hud-center {
-            grid-column: 2 / 3;
-            grid-row: 2 / 3;
+            width: 280px;
+            height: 280px;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
+            margin-top: 30px;
         }
 
-        /* ★外部画像ではなくSVGを使うためのスタイル */
-        .body-model {
-            height: 90%;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* スキャンラインのアニメーション */
-        .scanline {
-            position: absolute;
-            top: 0; left: 10%; right: 10%; height: 2px;
-            background: var(--delos-cyan);
-            box-shadow: 0 0 15px 3px var(--delos-cyan);
-            animation: scan 3s ease-in-out infinite alternate;
-            opacity: 0.8;
+        /* ★顔写真の設定（シアン色に染めるフィルター付き） */
+        .profile-img {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            object-fit: cover;
+            opacity: 0.85;
+            /* 画像をSF風のホログラムカラー（シアン）に変換 */
+            filter: grayscale(100%) sepia(100%) hue-rotate(150deg) saturate(300%) contrast(1.2);
+            /* 仮のシルエット。後でラズパイ内の画像に差し替えられます */
+            background: url('https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png') center/cover;
+            border: 2px solid var(--delos-cyan);
+            box-shadow: 0 0 30px rgba(77,248,255,0.3);
             z-index: 2;
         }
-        @keyframes scan { 0% { top: 5%; } 100% { top: 95%; } }
 
-        /* --- 左右のデータパネル（HUD風） --- */
-        .hud-side-panel {
+        /* 回転する文字リング (SVG) */
+        .ring-text {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            animation: spin 15s linear infinite;
+        }
+
+        /* 外側の点線リング */
+        .ring-outer {
+            position: absolute;
+            width: 230px;
+            height: 230px;
+            border: 1px dashed var(--delos-cyan);
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: spin 25s linear infinite reverse;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* ===============================
+           右パネル：高密度データ群
+        =============================== */
+        .right-panel {
             display: flex;
             flex-direction: column;
+            justify-content: flex-start;
             gap: 20px;
-            justify-content: center;
+            padding-right: 10px;
         }
-
-        .data-block {
-            background: rgba(77, 248, 255, 0.02);
+        
+        /* システム診断（高密度文字）セクション */
+        .sys-box {
             border: 1px solid var(--delos-cyan-dim);
-            border-left: 3px solid var(--delos-cyan);
             padding: 15px;
+            background: rgba(77,248,255,0.02);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px 25px;
             position: relative;
         }
+        /* 四隅の飾りカギ括弧 */
+        .sys-box::before { content: ''; position: absolute; top: -1px; left: -1px; width: 10px; height: 10px; border-top: 2px solid var(--delos-cyan); border-left: 2px solid var(--delos-cyan); }
+        .sys-box::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 10px; height: 10px; border-bottom: 2px solid var(--delos-cyan); border-right: 2px solid var(--delos-cyan); }
 
-        .data-block::before {
-            content: ''; position: absolute; top: 50%; width: 30px; height: 1px; background: var(--delos-cyan-dim);
+        .sys-item { display: flex; flex-direction: column; gap: 4px; }
+        .sys-lbl { color: var(--delos-grey); font-size: 0.65rem; letter-spacing: 1px; }
+        .sys-val { color: var(--delos-text); font-size: 0.85rem; }
+        .sys-hl { color: var(--delos-cyan); font-weight: bold; }
+        
+        /* ミニプログレスバー */
+        .bar-wrap { width: 100%; background: rgba(255,255,255,0.1); height: 4px; margin-top: 5px; }
+        .bar-fill { height: 100%; background: var(--delos-cyan); box-shadow: 0 0 5px var(--delos-cyan); }
+
+        /* タブ風のボタン群 */
+        .tab-group {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px dashed var(--delos-cyan-dim);
+            padding-bottom: 10px;
+            margin-top: 5px;
         }
-        .left-panel .data-block::before { right: -30px; }
-        .right-panel .data-block::before { left: -30px; border-left: none; border-right: 3px solid var(--delos-cyan); border-left: 1px solid var(--delos-cyan-dim); text-align: right;}
+        .tab-btn {
+            border: 1px solid var(--delos-cyan);
+            background: transparent;
+            color: var(--delos-cyan);
+            padding: 4px 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .tab-btn.active { background: var(--delos-cyan); color: var(--delos-bg); font-weight: bold; }
 
-        .block-header { font-size: 0.7rem; color: var(--delos-grey); font-family: 'Share Tech Mono', monospace; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px; }
-        .data-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; font-family: 'Share Tech Mono', monospace;}
-        .lbl { font-size: 0.7rem; color: var(--delos-grey); }
-        .val { font-size: 1.5rem; font-weight: bold; color: #fff; }
-
-        .progress-box { margin-top: 10px; }
-        .prog-bg { width: 100%; height: 4px; background: #111; border: 1px solid #333; }
-        .prog-fill { height: 100%; background: var(--delos-cyan); box-shadow: 0 0 8px var(--delos-cyan); transition: width 1s ease; }
-
-        /* --- 下部：コントロール --- */
-        .hud-footer {
-            grid-column: 1 / -1;
+        /* ===============================
+           生体データ大型表示 (HR / STP / SLP)
+        =============================== */
+        .vital-row {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            border-top: 1px dashed var(--delos-cyan-dim);
-            padding-top: 10px;
+            padding: 10px 0;
+        }
+        .v-block { display: flex; align-items: baseline; gap: 8px; }
+        .v-lbl { color: var(--delos-grey); font-size: 1.2rem; display: flex; flex-direction: column; text-align: right; line-height: 1.1;}
+        .v-lbl span { font-size: 0.5rem; }
+        .v-val { color: var(--delos-cyan); font-size: 5rem; font-family: 'Rajdhani', sans-serif; font-weight: 700; line-height: 0.75; text-shadow: 0 0 15px rgba(77,248,255,0.4);}
+        
+        /* 波形アニメーション (SVG) */
+        .ecg-box {
+            height: 80px;
+            width: 100%;
+            border: 1px solid var(--delos-cyan-dim);
+            background: rgba(77,248,255,0.02);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+        .ecg-grid {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(77,248,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(77,248,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: 1;
+        }
+        .ecg-line {
+            fill: none;
+            stroke: var(--delos-cyan);
+            stroke-width: 2.5;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 4px var(--delos-cyan));
+            animation: ecg-scroll 4s linear infinite;
+        }
+        @keyframes ecg-scroll {
+            to { transform: translateX(-400px); }
         }
 
-        button {
-            background: transparent; color: var(--delos-cyan); border: 1px solid var(--delos-cyan);
-            padding: 8px 25px; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 1rem;
-            letter-spacing: 2px; cursor: pointer; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-            transition: all 0.2s; outline: none;
+        /* 下部コントロールボタン */
+        .controls {
+            display: flex; justify-content: space-between; margin-top: auto; border-top: 1px dashed var(--delos-cyan-dim); padding-top: 15px;
         }
-        button:hover { background: var(--delos-cyan); color: var(--delos-bg); }
+        .action-btn {
+            background: transparent; color: var(--delos-cyan); border: 1px solid var(--delos-cyan);
+            padding: 8px 30px; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 1rem;
+            letter-spacing: 2px; cursor: pointer; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            transition: all 0.2s;
+        }
+        .action-btn:hover { background: var(--delos-cyan); color: var(--delos-bg); }
         .btn-secondary { border-color: var(--delos-grey); color: var(--delos-grey); }
         .btn-secondary:hover { background: var(--delos-grey); color: var(--delos-bg); }
 
@@ -175,133 +228,112 @@
 </head>
 <body>
 
-    <div class="hud-container">
+    <div class="main-container">
         
-        <!-- 上部：HOST IDと主要バイタル -->
-        <div class="hud-header">
-            <div class="host-id-box">
-                <div class="host-circle">HOST ID<br>AUTH</div>
-                <div style="font-size: 0.6rem; color: var(--delos-grey); font-family: 'Share Tech Mono'; line-height: 1.3;">
-                    TARGET: YOKOHAMA RESIDENCE<br>
-                    MODULE: BIOMETRIC SCAN<br>
-                    STATUS: <span style="color:var(--delos-cyan);">ACTIVE UPLINK</span>
-                </div>
-            </div>
+        <!-- 左パネル：頭部プロファイル -->
+        <div class="left-panel">
+            <div class="target-marker"></div>
             
-            <div class="top-vitals">
-                <div class="vital-group">
-                    <span class="vital-label">CURRENT HR</span>
-                    <div><span class="vital-value pulse-text" id="val-hr-current">--</span> <span class="vital-unit">BPM</span></div>
-                </div>
-                <div class="vital-group">
-                    <span class="vital-label">RESTING HR</span>
-                    <div><span class="vital-value" id="val-hr-rest" style="color: #fff;">--</span> <span class="vital-unit">BPM</span></div>
-                </div>
-                <div class="vital-group">
-                    <span class="vital-label">SYS STATUS</span>
-                    <div><span class="vital-value" id="status-hr" style="color: var(--delos-cyan); font-size: 1.5rem; line-height: 2;">SYNCING</span></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 左側：睡眠データパネル -->
-        <div class="hud-side-panel left-panel">
-            <div class="data-block">
-                <div class="block-header">▶ SLEEP ARCHITECTURE</div>
-                <div class="data-row">
-                    <span class="lbl">TOTAL DURATION</span>
-                    <span class="val" id="val-sleep-duration">-- <span style="font-size:0.8rem;">HRS</span></span>
-                </div>
-                <div class="data-row">
-                    <span class="lbl">EFFICIENCY</span>
-                    <span class="val" id="val-sleep-eff">-- <span style="font-size:0.8rem;">%</span></span>
-                </div>
-                <div class="progress-box">
-                    <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:var(--delos-grey);"><span>RECOVERY INDEX</span> <span id="val-sleep-index">--/100</span></div>
-                    <div class="prog-bg"><div class="prog-fill" id="bar-sleep" style="width: 0%;"></div></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 中央：人体ワイヤーフレームモデルとスキャンライン -->
-        <div class="hud-center">
-            <div class="body-model">
-                <!-- 外部画像に頼らない、コード描画(SVG)のサイバー人体設計図 -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 500" width="100%" height="90%" style="overflow: visible;">
-                    <defs>
-                        <filter id="glow">
-                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                            <feMerge>
-                                <feMergeNode in="coloredBlur"/>
-                                <feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                        </filter>
-                    </defs>
-                    <g stroke="var(--delos-cyan)" fill="none" stroke-width="2" filter="url(#glow)" opacity="0.5">
-                        <!-- 頭部 -->
-                        <ellipse cx="100" cy="50" rx="25" ry="35" />
-                        <line x1="100" y1="15" x2="100" y2="85" stroke-width="1" stroke-dasharray="2 4"/>
-                        <line x1="75" y1="50" x2="125" y2="50" stroke-width="1" stroke-dasharray="2 4"/>
-                        <!-- 背骨 -->
-                        <line x1="100" y1="85" x2="100" y2="250" />
-                        <!-- 肩〜腕 -->
-                        <path d="M 50 100 Q 100 80 150 100" />
-                        <path d="M 50 100 Q 30 180 20 260 L 10 350" />
-                        <path d="M 150 100 Q 170 180 180 260 L 190 350" />
-                        <!-- 胸郭（アバラ骨風のライン） -->
-                        <path d="M 100 110 C 60 110 50 170 100 200" />
-                        <path d="M 100 110 C 140 110 150 170 100 200" />
-                        <path d="M 100 140 C 70 140 60 170 100 190" />
-                        <path d="M 100 140 C 130 140 140 170 100 190" />
-                        <!-- 骨盤 -->
-                        <path d="M 100 250 Q 60 250 70 300 L 100 320 L 130 300 Q 140 250 100 250" />
-                        <line x1="100" y1="250" x2="100" y2="320" stroke-width="1" />
-                        <!-- 脚 -->
-                        <path d="M 75 305 Q 60 400 65 480" />
-                        <path d="M 125 305 Q 140 400 135 480" />
-                        <!-- 関節のジョイントマーカー -->
-                        <circle cx="50" cy="100" r="4" fill="var(--delos-cyan)"/>
-                        <circle cx="150" cy="100" r="4" fill="var(--delos-cyan)"/>
-                        <circle cx="20" cy="260" r="3" fill="var(--delos-cyan)"/>
-                        <circle cx="180" cy="260" r="3" fill="var(--delos-cyan)"/>
-                        <circle cx="75" cy="305" r="5" fill="var(--delos-cyan)"/>
-                        <circle cx="125" cy="305" r="5" fill="var(--delos-cyan)"/>
-                        <circle cx="62" cy="400" r="4" fill="var(--delos-cyan)"/>
-                        <circle cx="138" cy="400" r="4" fill="var(--delos-cyan)"/>
-                        <!-- ターゲットサークル（心臓部周辺） -->
-                        <circle cx="100" cy="150" r="60" stroke-width="0.5" stroke-dasharray="5 5" opacity="0.3"/>
-                        <circle cx="100" cy="150" r="80" stroke-width="0.2" opacity="0.2"/>
-                    </g>
+            <div class="profile-container">
+                <div class="ring-outer"></div>
+                
+                <!-- 回転するテキスト -->
+                <svg class="ring-text" viewBox="0 0 100 100">
+                    <path id="circlePath" d="M 50, 50 m -40, 0 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0" fill="none" />
+                    <text font-size="7.5" fill="var(--delos-cyan)" font-family="'Share Tech Mono', monospace" letter-spacing="2">
+                        <textPath href="#circlePath">HOST ID# AC5000487105 ◆ UPLINK ACTIVE ◆ BIOMETRIC SCAN ◆</textPath>
+                    </text>
                 </svg>
-            </div>
-            <div class="scanline"></div>
-        </div>
 
-        <!-- 右側：活動データパネル -->
-        <div class="hud-side-panel right-panel">
-            <div class="data-block" style="border-left: 1px solid var(--delos-cyan-dim); border-right: 3px solid var(--delos-cyan);">
-                <div class="block-header" style="text-align: right;">KINETIC ACTIVITY ◀</div>
-                <div class="data-row">
-                    <span class="lbl">DAILY STEPS</span>
-                    <span class="val" id="val-steps">--</span>
-                </div>
-                <div class="data-row">
-                    <span class="lbl">ENERGY EXPENDED</span>
-                    <span class="val" id="val-calories">-- <span style="font-size:0.8rem;">KCAL</span></span>
-                </div>
-                <div class="progress-box">
-                    <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:var(--delos-grey);"><span>TARGET PROGRESS</span> <span id="val-step-prog">--%</span></div>
-                    <div class="prog-bg"><div class="prog-fill" id="bar-steps" style="width: 0%;"></div></div>
-                </div>
+                <!-- 顔写真（後述の手順でローカルの画像に差し替えられます） -->
+                <div class="profile-img"></div>
+            </div>
+
+            <div style="margin-top: 40px; text-align: center; color: var(--delos-grey); font-size: 0.75rem; line-height: 1.5;">
+                <span class="sys-hl">TARGET LOC:</span> YOKOHAMA RESIDENCE<br>
+                <span class="sys-hl">SYS UPLINK:</span> ACTIVE / ENCRYPTED<br>
+                <span class="sys-hl">SYNC STATE:</span> <span id="sync-status">WAITING...</span>
             </div>
         </div>
 
-        <!-- 下部：コントロールボタン -->
-        <div class="hud-footer">
-            <button class="btn-secondary" onclick="location.href='/'">◀ RETURN TO MAIN</button>
-            <button onclick="fetchBiometrics()">INITIATE DEEP SCAN</button>
-        </div>
+        <!-- 右パネル：高密度データ群 -->
+        <div class="right-panel">
+            
+            <!-- 上段：システムダッシュボード風（高密度） -->
+            <div class="sys-box">
+                <div class="sys-item">
+                    <span class="sys-lbl">CPU-01 REACTOR</span>
+                    <span class="sys-val sys-hl">ON-LINE</span>
+                    <div class="bar-wrap"><div class="bar-fill" style="width: 75%;"></div></div>
+                </div>
+                <div class="sys-item">
+                    <span class="sys-lbl">SPEED / CORE</span>
+                    <span class="sys-val">1.4 GHz <span class="sys-hl">STABLE</span></span>
+                </div>
+                <div class="sys-item">
+                    <span class="sys-lbl">CURRENT SCENARIO</span>
+                    <span class="sys-val sys-hl">NORMAL OPERATIONS</span>
+                </div>
+                <div class="sys-item">
+                    <span class="sys-lbl">SYS. LOCATION</span>
+                    <span class="sys-val">SECTOR-01 / MAIN</span>
+                </div>
+                <div class="sys-item">
+                    <span class="sys-lbl">CORE VOLTAGE</span>
+                    <span class="sys-val sys-hl">1.25V</span>
+                    <div class="bar-wrap"><div class="bar-fill" style="width: 45%;"></div></div>
+                </div>
+                <div class="sys-item">
+                    <span class="sys-lbl">NETWORK IO</span>
+                    <span class="sys-val">LOCAL / <span class="sys-hl">FITBIT API</span></span>
+                </div>
+            </div>
 
+            <div class="tab-group">
+                <button class="tab-btn">SETTINGS</button>
+                <button class="tab-btn active">BIOMETRICS</button>
+                <button class="tab-btn">DIAGNOSTICS</button>
+                <button class="tab-btn">COMMANDER</button>
+                <button class="tab-btn" onclick="fetchBiometrics()">FORCE SYNC</button>
+            </div>
+
+            <!-- 下段：大型生体データ（HR, STEPS, SLEEP） -->
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                <div class="vital-row">
+                    <!-- 心拍数 -->
+                    <div class="v-block">
+                        <div class="v-lbl">HR<span>CURRENT</span></div>
+                        <div class="v-val" id="val-hr-current">--</div>
+                    </div>
+                    <!-- 歩数（劇中のSpO2のポジション） -->
+                    <div class="v-block">
+                        <div class="v-lbl">STP<span>DAILY STEPS</span></div>
+                        <div class="v-val" id="val-steps">--</div>
+                    </div>
+                    <!-- 睡眠時間（劇中のRRのポジション） -->
+                    <div class="v-block">
+                        <div class="v-lbl">SLP<span>DURATION</span></div>
+                        <div class="v-val" id="val-sleep">--</div>
+                    </div>
+                </div>
+
+                <!-- 鼓動する波形アニメーション（純粋なSVGとCSSだけで描画） -->
+                <div class="ecg-box">
+                    <div class="ecg-grid"></div>
+                    <svg width="200%" height="100%" viewBox="0 0 800 80" preserveAspectRatio="none" style="z-index: 2; position: relative;">
+                        <!-- 心電図のパターンを長めに描画 -->
+                        <path class="ecg-line" d="M0,40 L50,40 L60,20 L75,70 L90,10 L100,50 L110,40 L200,40 L250,40 L260,20 L275,70 L290,10 L300,50 L310,40 L400,40 L450,40 L460,20 L475,70 L490,10 L500,50 L510,40 L600,40 L650,40 L660,20 L675,70 L690,10 L700,50 L710,40 L800,40" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- コントロールボタン -->
+            <div class="controls">
+                <button class="action-btn btn-secondary" onclick="location.href='/'">◀ SYSTEM MAIN</button>
+                <button class="action-btn" onclick="fetchBiometrics()">EXTRACT BIOMETRICS</button>
+            </div>
+
+        </div>
     </div>
 
     <script>
@@ -310,29 +342,25 @@
                 const response = await fetch('/api/biometrics_detail');
                 const data = await response.json();
 
-                document.getElementById('val-sleep-duration').innerHTML = data.sleep.duration + ' <span style="font-size:0.8rem;">HRS</span>';
-                document.getElementById('val-sleep-eff').innerHTML = data.sleep.efficiency + ' <span style="font-size:0.8rem;">%</span>';
-                document.getElementById('val-sleep-index').innerText = data.sleep.index + " / 100";
-                document.getElementById('bar-sleep').style.width = data.sleep.index + "%";
-                
-                document.getElementById('val-steps').innerText = data.steps.count;
-                document.getElementById('val-calories').innerHTML = data.steps.calories + ' <span style="font-size:0.8rem;">KCAL</span>';
-                document.getElementById('val-step-prog').innerText = data.steps.progress + "%";
-                document.getElementById('bar-steps').style.width = data.steps.progress + "%";
-
+                // Fitbitから取得した本物データを流し込む
                 document.getElementById('val-hr-current').innerText = data.hr.current;
-                document.getElementById('val-hr-rest').innerText = data.hr.resting;
+                // 歩数が数万歩になると文字が大きすぎるため、万単位ならカンマ付きで表示
+                document.getElementById('val-steps').innerText = data.steps.count;
+                // 睡眠時間
+                document.getElementById('val-sleep').innerText = data.sleep.duration;
 
                 if (data.status.includes("SYNCED")) {
-                    document.getElementById('status-hr').innerText = "ONLINE";
+                    document.getElementById('sync-status').innerText = "ONLINE / SYNCED";
+                    document.getElementById('sync-status').style.color = "var(--delos-cyan)";
                 }
             } catch (error) {
-                console.error("Biometrics Fetch Error:", error);
-                document.getElementById('status-hr').innerText = "ERROR";
-                document.getElementById('status-hr').style.color = "var(--delos-alert)";
+                console.error("Fetch Error:", error);
+                document.getElementById('sync-status').innerText = "CONNECTION LOST";
+                document.getElementById('sync-status').style.color = "var(--delos-alert)";
             }
         }
 
+        // ページロード時に自動取得
         fetchBiometrics();
     </script>
 </body>
